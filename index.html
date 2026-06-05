@@ -496,6 +496,352 @@
     line-height: 1.5;
   }
   #error-toast.show { display: block; }
+
+  /* ─── PROVIDER TABS ─── */
+  .ai-provider-section {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .provider-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .ptab {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 1px;
+    padding: 6px 4px 5px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.12s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .ptab:hover { border-color: var(--green-dim); color: var(--text); }
+  .ptab.active { border-color: var(--green-lit); color: var(--green-lit); background: #0e1a0c; }
+  .ptab-name { font-weight: 500; letter-spacing: 1.5px; }
+  .ptab-badge {
+    font-size: 7px;
+    padding: 1px 4px;
+    border-radius: 1px;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  .ptab-badge.free { background: #0a2a0a; color: #6fc46a; border: 1px solid #2a5a28; }
+
+  .provider-info {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 8px;
+    padding: 7px 9px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+  .provider-info a {
+    color: var(--green);
+    text-decoration: none;
+  }
+  .provider-info a:hover { color: var(--green-lit); text-decoration: underline; }
+  .provider-info .info-model {
+    color: var(--amber);
+    margin-top: 3px;
+  }
+
+  /* rename old .ai-key-section to work inside provider section */
+  .ai-key-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+
+  .ai-btn {
+    background: transparent;
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    padding: 5px 11px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.12s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .ai-btn:hover { border-color: var(--green-lit); color: var(--green-lit); }
+  .ai-btn.active { border-color: var(--green-lit); color: var(--green-lit); background: #0e1e0c; }
+  .ai-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--green-lit);
+    animation: pulse 2s infinite;
+  }
+
+  /* ─── AI DRAWER ─── */
+  #ai-drawer {
+    position: fixed;
+    top: 52px; /* header height */
+    right: -440px;
+    width: 420px;
+    height: calc(100vh - 52px);
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -8px 0 40px rgba(0,0,0,0.7);
+  }
+  #ai-drawer.open { right: 0; }
+
+  .ai-drawer-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    background: var(--surface);
+  }
+  .ai-drawer-title {
+    font-family: var(--font-head);
+    font-size: 16px;
+    letter-spacing: 3px;
+    color: var(--green-lit);
+    line-height: 1;
+  }
+  .ai-drawer-sub {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 1.5px;
+    margin-top: 2px;
+  }
+  .ai-close-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 1px;
+    letter-spacing: 1px;
+  }
+  .ai-close-btn:hover { border-color: var(--green); color: var(--green-lit); }
+
+  /* Key entry */
+  .ai-key-section {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .ai-key-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .ai-key-row {
+    display: flex;
+    gap: 6px;
+  }
+  .ai-key-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 6px 8px;
+    border-radius: 2px;
+    outline: none;
+  }
+  .ai-key-input:focus { border-color: var(--green); }
+  .ai-key-save {
+    background: var(--green-dim);
+    border: 1px solid var(--green);
+    color: var(--green-lit);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .ai-key-save:hover { background: var(--green); color: var(--bg); }
+  .ai-key-status {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--text-mute);
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+  .ai-key-status.ok { color: var(--green); }
+
+  /* Messages */
+  #ai-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  #ai-messages::-webkit-scrollbar { width: 3px; }
+  #ai-messages::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .msg {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1.65;
+    border-radius: 2px;
+    padding: 10px 12px;
+    max-width: 100%;
+    word-break: break-word;
+  }
+  .msg-user {
+    background: #0e1e0c;
+    border: 1px solid var(--green-dim);
+    color: var(--green-lit);
+    align-self: flex-end;
+    max-width: 88%;
+  }
+  .msg-ai {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    align-self: flex-start;
+    white-space: pre-wrap;
+  }
+  .msg-ai .msg-sender {
+    font-size: 8px;
+    color: var(--green);
+    letter-spacing: 1.5px;
+    margin-bottom: 5px;
+    display: block;
+  }
+  .msg-system {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-dim);
+    font-size: 9.5px;
+    text-align: center;
+    padding: 8px;
+  }
+  .msg-typing {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 10px;
+  }
+  .typing-dots span {
+    animation: typingBounce 1.2s infinite;
+    display: inline-block;
+    margin: 0 1px;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingBounce {
+    0%,80%,100% { opacity: 0.2; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-3px); }
+  }
+
+  /* Quick prompts */
+  .quick-prompts {
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .quick-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--text-mute);
+    letter-spacing: 1px;
+    width: 100%;
+    margin-bottom: 2px;
+  }
+  .qp {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.1s;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+  }
+  .qp:hover { border-color: var(--green); color: var(--green-lit); background: #0e1a0c; }
+
+  /* Input row */
+  .ai-input-row {
+    display: flex;
+    gap: 6px;
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    background: var(--surface);
+  }
+  #ai-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    padding: 8px 10px;
+    border-radius: 2px;
+    outline: none;
+    resize: none;
+    line-height: 1.4;
+    max-height: 80px;
+    min-height: 36px;
+  }
+  #ai-input:focus { border-color: var(--green); }
+  #ai-send {
+    background: var(--green-dim);
+    border: 1px solid var(--green);
+    color: var(--green-lit);
+    font-family: var(--font-head);
+    font-size: 13px;
+    letter-spacing: 1px;
+    padding: 0 14px;
+    cursor: pointer;
+    border-radius: 2px;
+    align-self: flex-end;
+    height: 36px;
+    transition: all 0.12s;
+  }
+  #ai-send:hover { background: var(--green); color: var(--bg); }
+  #ai-send:disabled { opacity: 0.35; cursor: not-allowed; }
 </style>
 </head>
 <body>
@@ -516,6 +862,9 @@
       <button class="ltog" data-mode="both" onclick="setLayerMode('both')">BOTH</button>
     </div>
     <button class="gmu-toggle-btn" id="gmu-btn" onclick="toggleGMU()" title="Toggle GMU Boundaries">GMU UNITS</button>
+    <button class="ai-btn" id="ai-toggle-btn" onclick="toggleAIDrawer()" title="Open Field Intelligence AI">
+      <span class="ai-dot"></span>FIELD AI
+    </button>
     <div class="status-item">
       <span style="color:var(--text-mute)">SRC: iNaturalist API</span>
     </div>
@@ -640,6 +989,71 @@
 </div>
 
 <div id="error-toast"></div>
+
+<!-- ═══ AI FIELD INTELLIGENCE DRAWER ═══ -->
+<div id="ai-drawer">
+  <div class="ai-drawer-header">
+    <div>
+      <div class="ai-drawer-title">⬡ FIELD INTELLIGENCE</div>
+      <div class="ai-drawer-sub">ELK SCOUT AI ANALYST · COLORADO HUNTING ADVISOR</div>
+    </div>
+    <button class="ai-close-btn" onclick="toggleAIDrawer()">✕ CLOSE</button>
+  </div>
+
+  <!-- PROVIDER SELECTOR -->
+  <div class="ai-provider-section">
+    <div class="ai-key-label">// SELECT AI PROVIDER</div>
+    <div class="provider-tabs">
+      <button class="ptab active" data-provider="groq" onclick="selectProvider('groq')">
+        <span class="ptab-name">GROQ</span>
+        <span class="ptab-badge free">FREE</span>
+      </button>
+      <button class="ptab" data-provider="anthropic" onclick="selectProvider('anthropic')">
+        <span class="ptab-name">CLAUDE</span>
+      </button>
+      <button class="ptab" data-provider="openai" onclick="selectProvider('openai')">
+        <span class="ptab-name">OPENAI</span>
+      </button>
+      <button class="ptab" data-provider="xai" onclick="selectProvider('xai')">
+        <span class="ptab-name">GROK</span>
+      </button>
+    </div>
+
+    <!-- Provider info + key input (content swaps per provider) -->
+    <div id="provider-info" class="provider-info"></div>
+
+    <div class="ai-key-row">
+      <input type="password" id="ai-key-input" class="ai-key-input" placeholder="Enter API key..." autocomplete="off">
+      <button class="ai-key-save" onclick="saveAPIKey()">SET KEY</button>
+    </div>
+    <div id="ai-key-status" class="ai-key-status">No key set</div>
+  </div>
+
+  <div id="ai-messages">
+    <div class="msg msg-system">
+      Field Intelligence is online. Select a provider, enter your API key, and ask anything about elk zones, scoring, Colorado hunting tactics, or season strategy.
+    </div>
+  </div>
+
+  <div class="quick-prompts" id="quick-prompts">
+    <div class="quick-label">// QUICK INTELLIGENCE REQUESTS</div>
+    <button class="qp" onclick="quickAsk('What do the top-scoring zones mean right now and where should I focus my hunt?')">Top zone interpretation</button>
+    <button class="qp" onclick="quickAsk('Explain how the five-factor score is calculated and what each factor means for finding elk.')">How scoring works</button>
+    <button class="qp" onclick="quickAsk('What is elk behavior during the rut and how should I adjust my strategy?')">Rut behavior tactics</button>
+    <button class="qp" onclick="quickAsk('Compare high alpine vs mid-mountain elk zones — when should I hunt each?')">Elevation strategy</button>
+    <button class="qp" onclick="quickAsk('What does road pressure score mean and how does hunting pressure affect elk movement?')">Road pressure explained</button>
+    <button class="qp" onclick="quickAsk('What are the best late season tactics when elk have moved to lower elevations?')">Late season tactics</button>
+    <button class="qp" onclick="quickAsk('How should I interpret the heat map vs the grid view for scouting?')">Heat map vs grid</button>
+    <button class="qp" onclick="quickAsk('Walk me through a Colorado OTC elk hunt plan based on the current sighting data.')">Hunt plan walkthrough</button>
+  </div>
+
+  <div class="ai-input-row">
+    <textarea id="ai-input" placeholder="Ask about zones, elk behavior, season strategy..." rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage()}"
+      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"></textarea>
+    <button id="ai-send" onclick="sendAIMessage()">SEND</button>
+  </div>
+</div>
 
 <script>
 // ─── MAP INIT ───────────────────────────────────────────────────────────
@@ -1052,7 +1466,7 @@ function buildGridCells(sightings, targetMonths, pressureWeight) {
 
 // ─── iNATURALIST FETCH ───────────────────────────────────────────────────
 async function fetchElkSightings(yearsBack, monthFilter) {
-  const ELK_TAXON_ID = 42291; // Cervus canadensis
+  const ELK_TAXON_ID = 204114; // Cervus canadensis (elk/wapiti)
   const PER_PAGE = 200;
   const MAX_PAGES = 8;
   const yearNow = new Date().getFullYear();
@@ -1364,6 +1778,347 @@ document.getElementById('pressure-weight').addEventListener('input', function() 
   const labels = ['IGNORE','MODERATE','HIGH'];
   document.getElementById('pressure-val').textContent = labels[this.value];
 });
+
+// ─── AI FIELD INTELLIGENCE ────────────────────────────────────────────────
+
+// ── PROVIDER DEFINITIONS ──────────────────────────────────────────────────
+const AI_PROVIDERS = {
+  groq: {
+    name: 'Groq',
+    endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+    model: 'llama-3.3-70b-versatile',
+    format: 'openai',
+    keyPrefix: 'gsk_',
+    keyPlaceholder: 'gsk_...',
+    info: `<strong style="color:var(--green-lit)">FREE TIER — No credit card required.</strong><br>
+Get your free key at <a href="https://console.groq.com" target="_blank">console.groq.com</a><br>
+<span class="info-model">Model: Llama 3.3 70B (fast, capable, free)</span>`
+  },
+  anthropic: {
+    name: 'Claude (Anthropic)',
+    endpoint: 'https://api.anthropic.com/v1/messages',
+    model: 'claude-haiku-4-5',
+    format: 'anthropic',
+    keyPrefix: 'sk-ant-',
+    keyPlaceholder: 'sk-ant-...',
+    info: `Paid API — get key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
+<span class="info-model">Model: Claude Haiku (fast, cost-efficient)</span>`
+  },
+  openai: {
+    name: 'OpenAI',
+    endpoint: 'https://api.openai.com/v1/chat/completions',
+    model: 'gpt-4o-mini',
+    format: 'openai',
+    keyPrefix: 'sk-',
+    keyPlaceholder: 'sk-...',
+    info: `Paid API — get key at <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a><br>
+<span class="info-model">Model: GPT-4o Mini (fast, affordable)</span>`
+  },
+  xai: {
+    name: 'Grok (xAI)',
+    endpoint: 'https://api.x.ai/v1/chat/completions',
+    model: 'grok-3-mini',
+    format: 'openai',
+    keyPrefix: 'xai-',
+    keyPlaceholder: 'xai-...',
+    info: `Get key at <a href="https://console.x.ai" target="_blank">console.x.ai</a><br>
+<span class="info-model">Model: Grok 3 Mini</span>`
+  }
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let aiDrawerOpen = false;
+let activeProvider = 'groq';
+let aiKeys = {};
+let aiConversation = [];
+let aiTyping = false;
+
+// Load any saved keys from sessionStorage
+Object.keys(AI_PROVIDERS).forEach(p => {
+  const k = sessionStorage.getItem('elk_ai_key_' + p);
+  if (k) aiKeys[p] = k;
+});
+
+// ── PROVIDER SELECTOR ─────────────────────────────────────────────────────
+function selectProvider(id) {
+  activeProvider = id;
+  const prov = AI_PROVIDERS[id];
+
+  document.querySelectorAll('.ptab').forEach(t => {
+    t.classList.toggle('active', t.dataset.provider === id);
+  });
+
+  document.getElementById('provider-info').innerHTML = prov.info;
+
+  const inp = document.getElementById('ai-key-input');
+  inp.value = '';
+  inp.placeholder = aiKeys[id] ? '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' : prov.keyPlaceholder;
+
+  const s = document.getElementById('ai-key-status');
+  if (aiKeys[id]) {
+    s.textContent = '\u2713 KEY ACTIVE FOR ' + prov.name.toUpperCase();
+    s.className = 'ai-key-status ok';
+  } else {
+    s.textContent = 'No key set for ' + prov.name;
+    s.className = 'ai-key-status';
+  }
+
+  aiConversation = [];
+}
+
+// Init provider UI after DOM ready
+setTimeout(() => selectProvider('groq'), 0);
+
+function toggleAIDrawer() {
+  aiDrawerOpen = !aiDrawerOpen;
+  document.getElementById('ai-drawer').classList.toggle('open', aiDrawerOpen);
+  document.getElementById('ai-toggle-btn').classList.toggle('active', aiDrawerOpen);
+}
+
+function saveAPIKey() {
+  const key = document.getElementById('ai-key-input').value.trim();
+  if (!key) return;
+
+  const prov = AI_PROVIDERS[activeProvider];
+  const s = document.getElementById('ai-key-status');
+
+  // Soft prefix warning only
+  if (prov.keyPrefix && !key.startsWith(prov.keyPrefix)) {
+    s.textContent = '\u26a0 ' + prov.name + ' keys typically start with "' + prov.keyPrefix + '" — saved anyway';
+    s.className = 'ai-key-status';
+  }
+
+  aiKeys[activeProvider] = key;
+  sessionStorage.setItem('elk_ai_key_' + activeProvider, key);
+
+  document.getElementById('ai-key-input').value = '';
+  document.getElementById('ai-key-input').placeholder = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+  s.textContent = '\u2713 KEY ACTIVE \u2014 ' + prov.name.toUpperCase() + ' (session only)';
+  s.className = 'ai-key-status ok';
+
+  if (aiConversation.length === 0) {
+    appendAIMessage('ai', 'FIELD INTELLIGENCE ONLINE \u2014 ' + prov.name.toUpperCase() + '\n\nI have full context of your ELK SCOUT session. Ask me about your zones, the scoring model, Colorado elk behavior, or hunt strategy.');
+  }
+}
+
+// ── CONTEXT BUILDER ───────────────────────────────────────────────────────
+function buildAppContext() {
+  const monthSel = document.getElementById('sel-month');
+  const monthLabel = monthSel?.options[monthSel.selectedIndex]?.text || 'All Months';
+  const yearsSel = document.getElementById('sel-years');
+  const yearsLabel = yearsSel?.options[yearsSel.selectedIndex]?.text || '5 Years';
+  const elevSel = document.getElementById('sel-elev');
+  const elevLabel = elevSel?.options[elevSel.selectedIndex]?.text || 'All Elevations';
+  const pressureVal = document.getElementById('pressure-val')?.textContent || 'HIGH';
+  const totalSightings = document.getElementById('stat-total')?.textContent || '\u2014';
+  const hotZones = document.getElementById('stat-zones')?.textContent || '\u2014';
+  const topScore = document.getElementById('stat-top-score')?.textContent || '\u2014';
+  const peakMonth = document.getElementById('stat-peak')?.textContent || '\u2014';
+  const gmuActive = document.getElementById('gmu-btn')?.classList.contains('active') ? 'YES' : 'NO';
+
+  let topZonesText = 'No scan run yet.';
+  if (gridCells.length > 0) {
+    topZonesText = gridCells.slice(0, 5).map((z, i) => {
+      const el = {high:'HIGH ALPINE (>10,500ft)', mid:'MID MOUNTAIN (8,000-10,500ft)', low:'LOW TRANSITION (<8,000ft)'}[z.elevCat];
+      return `  ${i+1}. Score ${z.score}/100 -- ${z.lat.toFixed(2)}N ${Math.abs(z.lng).toFixed(2)}W -- ${z.count} sightings -- ${el} -- Peak: ${MONTH_NAMES[z.peakMonth] || 'unknown'}`;
+    }).join('\n');
+  }
+
+  return `CURRENT ELK SCOUT SESSION STATE:
+Season filter: ${monthLabel}
+Data range: ${yearsLabel}
+Elevation filter: ${elevLabel}
+Road pressure weight: ${pressureVal}
+Total sightings loaded: ${totalSightings}
+Hot zones (score >=60): ${hotZones}
+Top intelligence score: ${topScore}/100
+Peak month in dataset: ${peakMonth}
+GMU overlay active: ${gmuActive}
+
+TOP 5 RANKED ZONES:
+${topZonesText}`;
+}
+
+// ── SYSTEM PROMPT ─────────────────────────────────────────────────────────
+const AI_SYSTEM_PROMPT = `You are ELK SCOUT Field Intelligence, an expert AI hunting analyst embedded in the ELK SCOUT Colorado elk scouting application. You are concise, tactical, and direct — like a seasoned Colorado elk guide who knows the terrain and the data.
+
+SCORING MODEL (know this cold):
+The five-factor intelligence score (0-100) combines:
+1. DENSITY (max 40 pts) — Log-scaled sighting count per 0.25 degree grid cell (~17mi2). More verified sightings = higher density signal.
+2. SEASON CONSISTENCY (max 20 pts) — Whether sightings cluster in the selected hunt season. In-season=100%, adjacent months=60%, off-season=20%.
+3. ELEVATION (max 20 pts) — High alpine (>10,500ft) = 20pts, Mid mountain (8,000-10,500ft) = 18pts, Low transition (<8,000ft) = 8pts.
+4. COVER PROXY (max 10 pts) — Western slope and mountain park terrain scores higher (90) vs Front Range (40). Proxy for timber, escape cover, reduced access.
+5. ROAD PRESSURE (max 10 pts) — Backcountry west slope = 75pts raw, near I-70 = 40pts, Front Range = 25pts, near I-25 = 10pts.
+
+SCORE INTERPRETATION:
+PRIME ZONE (>=80): Top priority — high density, good elevation, low road pressure, in-season.
+HOT ZONE (60-79): Strong signal. Worth boots on the ground.
+ACTIVE (40-59): Some activity, weaker factors. Good secondary.
+SPARSE (<40): Low confidence, background noise.
+
+DATA SOURCE:
+Research-grade iNaturalist observations (Cervus canadensis, taxon 42291). NOT harvest reports. Data skews toward accessible areas — backcountry cells with modest counts may be significantly underrepresented.
+
+COLORADO ELK BEHAVIOR BY SEASON:
+SUMMER (Jun-Aug): High alpine basins above 10,000ft. Bulls in velvet, cows with calves in meadow edges.
+PRE-RUT (Sep 1-15): Bulls bugling, moving toward breeding areas. Look for wallows, rubs, saddles.
+RUT PEAK (Sep 15 - Oct 10): Peak activity. Hunt saddles between drainages at dawn/dusk.
+POST-RUT (Oct 11 - Nov): Bull recovery, elk dispersing. Rifle pressure moves herds toward private land.
+LATE SEASON (Nov-Jan): Snow pushes elk to lower elevations, south-facing slopes, agricultural areas.
+
+ELEVATION MIGRATION:
+Altitudinal migrants: summer alpine (9,500-12,000ft) > fall mid-mountain (8,000-10,500ft) > winter foothills (<7,500ft). Migration follows snow depth and food. Drought = stay higher. Heavy early snow = move down fast.
+
+KEY TACTICAL PRINCIPLES:
+- West slope holds more elk: lower pressure, better timber, more public land.
+- North aspects = bedding cover. South aspects = dawn/dusk feeding.
+- Saddles between drainages = travel corridors.
+- San Juan, White River, Rio Grande NF = best public land elk blocks.
+- OTC GMUs have high pressure. Limited license GMUs have better bulls.
+- iNaturalist data has observer bias toward accessible areas.
+
+SAN LUIS VALLEY CONTEXT:
+SLV floor is low-elevation winter range. Sangre de Cristos (east) and San Juans (west) hold elk. GMUs 80, 81, 82, 83, 68, 69 cover this region. Rio Grande NF is core habitat.
+
+Be direct and tactical. Reference actual zone scores and coordinates from session state. If no scan has run, say so and tell the user to run a scout first.`;
+
+// ── MESSAGING ─────────────────────────────────────────────────────────────
+function quickAsk(text) {
+  document.getElementById('ai-input').value = text;
+  sendAIMessage();
+}
+
+function appendAIMessage(role, text) {
+  const container = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.className = role === 'user' ? 'msg msg-user' : 'msg msg-ai';
+  if (role === 'ai') {
+    div.innerHTML = `<span class="msg-sender">\u2B21 FIELD INTELLIGENCE</span>${escapeHTML(text)}`;
+  } else {
+    div.textContent = text;
+  }
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping() {
+  const container = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.className = 'msg msg-ai msg-typing';
+  div.id = 'ai-typing-indicator';
+  div.innerHTML = `<span class="msg-sender">\u2B21 FIELD INTELLIGENCE</span><span class="typing-dots"><span>\u25aa</span><span>\u25aa</span><span>\u25aa</span></span>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  document.getElementById('ai-typing-indicator')?.remove();
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── SEND MESSAGE ──────────────────────────────────────────────────────────
+async function sendAIMessage() {
+  if (aiTyping) return;
+
+  const key = aiKeys[activeProvider];
+  if (!key) {
+    appendAIMessage('ai', '\u26a0 No API key set for ' + AI_PROVIDERS[activeProvider].name + '. Enter your key above to activate Field Intelligence.');
+    return;
+  }
+
+  const input = document.getElementById('ai-input');
+  const userText = input.value.trim();
+  if (!userText) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  appendAIMessage('user', userText);
+
+  const appContext = buildAppContext();
+  const contextualMessage = '[LIVE APP STATE]\n' + appContext + '\n\n[USER QUESTION]\n' + userText;
+  aiConversation.push({ role: 'user', content: contextualMessage });
+
+  aiTyping = true;
+  document.getElementById('ai-send').disabled = true;
+  showTyping();
+
+  try {
+    const prov = AI_PROVIDERS[activeProvider];
+    let response;
+
+    if (prov.format === 'anthropic') {
+      response = await fetch(prov.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: prov.model,
+          max_tokens: 1024,
+          system: AI_SYSTEM_PROMPT,
+          messages: aiConversation
+        })
+      });
+    } else {
+      // OpenAI-compatible (Groq, OpenAI, xAI)
+      response = await fetch(prov.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + key
+        },
+        body: JSON.stringify({
+          model: prov.model,
+          max_tokens: 1024,
+          messages: [
+            { role: 'system', content: AI_SYSTEM_PROMPT },
+            ...aiConversation
+          ]
+        })
+      });
+    }
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error?.message || err.message || 'API error ' + response.status);
+    }
+
+    const data = await response.json();
+    let reply;
+    if (prov.format === 'anthropic') {
+      reply = data.content?.[0]?.text || '(no response)';
+    } else {
+      reply = data.choices?.[0]?.message?.content || '(no response)';
+    }
+
+    removeTyping();
+    appendAIMessage('ai', reply);
+    aiConversation.push({ role: 'assistant', content: reply });
+
+    if (aiConversation.length > 24) {
+      aiConversation = aiConversation.slice(-24);
+    }
+
+  } catch(e) {
+    removeTyping();
+    const msg = (e.message.includes('401') || e.message.toLowerCase().includes('unauthorized'))
+      ? '\u26a0 Invalid API key for ' + AI_PROVIDERS[activeProvider].name + '. Check your key and try again.'
+      : (e.message.includes('429') || e.message.toLowerCase().includes('rate'))
+      ? '\u26a0 Rate limited. Wait a moment and try again.'
+      : '\u26a0 Error: ' + e.message;
+    appendAIMessage('ai', msg);
+    aiConversation.pop();
+  }
+
+  aiTyping = false;
+  document.getElementById('ai-send').disabled = false;
+}
 
 // ─── AUTO-RUN ON LOAD ─────────────────────────────────────────────────────
 map.whenReady(() => {
