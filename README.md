@@ -107,7 +107,7 @@ Quick-prompt buttons cover the most common questions; the chat supports full mul
 ELK SCOUT is a single-file HTML application — no build step, no backend, no database. Open the file in any modern browser and it runs. All computation happens client-side.
 
 ```
-elk-scout-co.html
+index.html
 ├── CSS         — Dark tactical UI, CSS variables, responsive layout
 ├── Leaflet     — Map rendering (OSM tiles, GeoJSON, heatmap)
 ├── JavaScript
@@ -209,9 +209,9 @@ No installation required.
 ```bash
 git clone https://github.com/jkh2/elk-scout.git
 cd elk-scout
-open elk-scout-co.html   # macOS
+open index.html   # macOS
 # or
-start elk-scout-co.html  # Windows
+start index.html  # Windows
 # or just drag the file into your browser
 ```
 
@@ -243,7 +243,7 @@ The app makes live API calls to iNaturalist on load. An internet connection is r
 - [ ] Species toggle (mule deer, pronghorn)
 - [ ] Multi-state support
 - [ ] Offline mode with cached sighting data
-- [ ] PWA / mobile-optimized layout
+- [x] Mobile-friendly responsive layout with collapsible panels
 
 ---
 
