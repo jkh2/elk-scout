@@ -1,4 +1,4 @@
-# ELK SCOUT v1.2 — Colorado Field Intelligence
+# ELK SCOUT v1.3 — Colorado Field Intelligence
 **Real sighting data. Transparent scoring. AI-powered field analysis. Less guesswork.**
 
 A browser-based elk scouting intelligence tool for Colorado hunters, built on verified citizen science data from iNaturalist and official CPW Game Management Unit boundaries. ELK SCOUT analyzes thousands of research-grade elk observations to surface where animals are actually showing up — broken down by elevation, cover, season, and road pressure — then lets you interrogate the data with an embedded AI hunting analyst.
@@ -53,12 +53,13 @@ Scores combine into a single 0–100 Intelligence Score per zone. Zones are rank
 - **HEAT** — Score-weighted density heatmap; hotspots glow brighter based on composite score, not just raw observation count
 - **BOTH** — Heat layer underneath grid at reduced opacity — maximum information density
 
-### Base Layer (MAP | SAT toggle)
-Switch between two base tile sources at any time — before or after a scout run:
-- **MAP** — OpenStreetMap street/topo layer with dark tactical filter applied
-- **SAT** — ESRI World Imagery satellite view (same source as CPW's own hunting atlas) — true terrain colors, no filter. See timber stands, open parks, drainages, and ridgelines as they actually look. All data layers — zones, heat, GMU boundaries — remain visible on top of satellite imagery.
+### Base Layer (MAP | SAT | TOPO toggle)
+Switch between three base tile sources at any time — before or after a scout run:
+- **MAP** — OpenStreetMap street layer with dark tactical filter applied
+- **SAT** — ESRI World Imagery satellite view (same source as CPW's own hunting atlas) — true terrain colors, no filter. See timber stands, open parks, drainages, and ridgelines as they actually look.
+- **TOPO** — USGS National Map topographic layer — official USGS topo quads rendered as web tiles. Contour lines, elevation labels, named peaks, drainages, and land cover. The same data source hunters have trusted for decades, now overlaid with your scored elk zones.
 
-No API key required for either base layer.
+All data layers — grid zones, heat map, GMU boundaries — remain visible on top of whichever base layer is active. No API key required for any base layer.
 
 ### CPW GMU Overlay
 - Official Colorado Parks & Wildlife Game Management Unit boundaries
@@ -206,6 +207,7 @@ refreshGMUCounts()     →  rebuild GMU overlay if active
 | CPW Open Data / ArcGIS Hub | Game Management Unit boundaries (Big Game) | Public domain — Colorado state government |
 | OpenStreetMap | Street/topo base map tiles | ODbL |
 | ESRI World Imagery | Satellite base map tiles | Esri, Maxar, Earthstar Geographics |
+| USGS National Map | Topographic base map tiles | U.S. Geological Survey |
 
 ### API Details
 
@@ -268,6 +270,9 @@ The app makes live API calls to iNaturalist on load. An internet connection is r
 
 ## Roadmap
 
+**Shipped in v1.3:**
+- [x] USGS topographic base layer (TOPO button, MAP/SAT/TOPO toggle)
+
 **Shipped in v1.2:**
 - [x] Satellite imagery base layer (ESRI World Imagery, MAP/SAT toggle)
 
@@ -281,7 +286,7 @@ The app makes live API calls to iNaturalist on load. An internet connection is r
 - [x] FIELD AI always accessible (outside collapsible header)
 
 **Planned:**
-- [ ] Real elevation data via OpenTopoData / USGS 3DEP API
+- [ ] Real elevation data in scoring model via OpenTopoData / USGS 3DEP API (topo tiles added in v1.3; scoring model elevation upgrade is next)
 - [ ] USFS road layer for true pressure-distance scoring
 - [ ] User-submitted sightings as a second data flywheel
 - [ ] Species toggle (mule deer, pronghorn)
