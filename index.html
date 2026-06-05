@@ -283,9 +283,8 @@
 
   /* ─── MAP ─── */
   #map {
-    flex: 1;
-    position: relative;
-    height: 100%;
+    position: absolute;
+    inset: 0;
   }
 
   /* Leaflet dark override */
@@ -1102,12 +1101,11 @@ let gmuVisible = false;
 let gmuLoaded = false;
 let gmuLoading = false;
 
-// ArcGIS query endpoint — fetches only needed fields, reduces coordinate precision server-side
-// This brings the payload from ~26MB down to ~1-2MB
-const GMU_GEOJSON_URL = 'https://services.arcgis.com/rsFbTj0runsNtkoS/arcgis/rest/services/CPW_Administrative_Boundaries/FeatureServer/6/query?where=1%3D1&outFields=GMUID%2CELKDAU%2CCOUNTY%2CSqMilesGIS&f=geojson&geometryPrecision=4&outSR=4326';
+// ArcGIS Hub API v3 — verified working, returns 186 GMU features with full field set
+const GMU_GEOJSON_URL = 'https://opendata.arcgis.com/api/v3/datasets/168fccb0583f42f1afe57de6c9ce846d_6/downloads/data?format=geojson&spatialRefId=4326';
 
-// Fallback to full Hub download if the above 404s (URL may change with service updates)
-const GMU_FALLBACK_URL = 'https://opendata.arcgis.com/datasets/168fccb0583f42f1afe57de6c9ce846d_6.geojson';
+// Fallback: Colorado GeoLibrary GMU dataset
+const GMU_FALLBACK_URL = 'https://geodata.colorado.gov/datasets/2c0794ece2ee4c8d9ac1f64cda8d0216_0/downloads/data?format=geojson&spatialRefId=4326';
 
 // Build sighting count per GMU for the info panel
 function countSightingsPerGMU(sightings, gmuFeatures) {
@@ -1294,6 +1292,16 @@ function getPolygonCentroid(geometry) {
   let sumX = 0, sumY = 0;
   for (const c of ring) { sumX += c[0]; sumY += c[1]; }
   return [sumX / ring.length, sumY / ring.length];
+}
+
+function refreshGMUCounts() {
+  // Called after each new scout run — rebuilds GMU layer with fresh sighting counts
+  if (!gmuLoaded || !gmuVisible) return;
+  map.removeLayer(gmuLayer);
+  gmuLayer = null;
+  gmuLoaded = false;
+  gmuLoading = false;
+  loadAndShowGMU();
 }
 
 function toggleGMU() {
@@ -1586,6 +1594,7 @@ async function runScout() {
     renderMap(filtered, gridCells);
     renderStats(filtered, gridCells);
     renderZoneList(gridCells);
+    refreshGMUCounts(); // update GMU popup counts if overlay is active
 
     setLoadBar(100);
     setLoadStatus('Complete.');
@@ -1817,7 +1826,7 @@ Get your free key at <a href="https://console.groq.com" target="_blank">console.
   xai: {
     name: 'Grok (xAI)',
     endpoint: 'https://api.x.ai/v1/chat/completions',
-    model: 'grok-3-mini',
+    model: 'grok-3-mini-fast',
     format: 'openai',
     keyPrefix: 'xai-',
     keyPlaceholder: 'xai-...',
@@ -1957,7 +1966,7 @@ ACTIVE (40-59): Some activity, weaker factors. Good secondary.
 SPARSE (<40): Low confidence, background noise.
 
 DATA SOURCE:
-Research-grade iNaturalist observations (Cervus canadensis, taxon 42291). NOT harvest reports. Data skews toward accessible areas — backcountry cells with modest counts may be significantly underrepresented.
+Research-grade iNaturalist observations (Cervus canadensis, taxon 204114). NOT harvest reports. Data skews toward accessible areas — backcountry cells with modest counts may be significantly underrepresented.
 
 COLORADO ELK BEHAVIOR BY SEASON:
 SUMMER (Jun-Aug): High alpine basins above 10,000ft. Bulls in velvet, cows with calves in meadow edges.
