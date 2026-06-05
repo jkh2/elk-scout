@@ -109,7 +109,8 @@
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible; /* must be visible so sidebar-tab can poke outside */
+    position: relative; /* anchor for absolutely-positioned sidebar-tab */
   }
 
   .panel-section {
@@ -697,6 +698,14 @@
     letter-spacing: 1px;
   }
   .ai-key-status.ok { color: var(--green); }
+  .ai-key-tip {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--text-mute);
+    margin-top: 5px;
+    letter-spacing: 0.5px;
+    line-height: 1.5;
+  }
 
   /* Messages */
   #ai-messages {
@@ -841,6 +850,130 @@
   }
   #ai-send:hover { background: var(--green); color: var(--bg); }
   #ai-send:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* ═══ PANEL COLLAPSE SYSTEM ═══════════════════════════════════════════════ */
+
+  /* Sidebar collapse tab - always visible on left edge */
+  #sidebar-tab {
+    position: absolute;
+    right: -22px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 52px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    transition: background 0.15s;
+    color: var(--text-dim);
+    font-size: 10px;
+  }
+  #sidebar-tab:hover { background: var(--surface); color: var(--green-lit); }
+
+  /* Sidebar collapsed state */
+  .left-panel {
+    position: relative;
+    transition: width 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+  .left-panel.collapsed {
+    width: 0 !important;
+    border-right: none;
+  }
+  .left-panel.collapsed .panel-inner { opacity: 0; pointer-events: none; }
+  .left-panel.collapsed #sidebar-tab {
+    right: -23px;
+    border-left: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .panel-inner {
+    width: 300px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: opacity 0.15s;
+  }
+
+  /* Header controls collapse */
+  #header-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.2s;
+    overflow: hidden;
+  }
+  #header-controls.collapsed {
+    width: 0;
+    gap: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  #header-collapse-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.12s;
+  }
+  #header-collapse-btn:hover { border-color: var(--green); color: var(--green-lit); }
+
+  /* ═══ MOBILE RESPONSIVE ════════════════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    /* Collapse sidebar by default on mobile */
+    .left-panel { width: 280px; }
+    .panel-inner { width: 280px; }
+
+    /* Header: tighten up */
+    header { padding: 0 12px; height: 48px; }
+    #ai-drawer { top: 48px; height: calc(100vh - 48px); }
+    .brand-sub { display: none; }
+    .brand-name { font-size: 20px; }
+
+    /* Hide lower-priority header items on mobile */
+    #hdr-count { display: none !important; }
+    .status-item:last-child { display: none; }
+
+    /* Header controls wrap instead of overflow */
+    .status-bar { gap: 10px; flex-wrap: nowrap; overflow-x: auto; }
+
+    /* AI drawer full width on mobile */
+    #ai-drawer {
+      width: 100vw;
+      right: -100vw;
+    }
+    #ai-drawer.open { right: 0; }
+
+    /* Touch-friendly tap targets */
+    select { padding: 10px 8px; font-size: 13px; min-height: 44px; }
+    .btn-run { padding: 14px; font-size: 18px; }
+    .qp { padding: 8px 10px; font-size: 10px; }
+    #ai-input { font-size: 13px; }
+    .ptab { padding: 8px 4px; }
+    .gmu-toggle-btn { padding: 5px 8px; font-size: 8px; }
+    .ai-btn { padding: 5px 8px; font-size: 8px; }
+
+    /* Zone cards touch friendly */
+    .zone-card { padding: 10px 12px; }
+  }
+
+  @media (max-width: 480px) {
+    /* On very small screens, hide layer toggles in header to save space */
+    #layer-toggle { display: none !important; }
+    .brand-name { font-size: 18px; letter-spacing: 2px; }
+  }
 </style>
 </head>
 <body>
@@ -850,8 +983,10 @@
     <span class="brand-name">ELK SCOUT</span>
     <span class="brand-sub">Colorado Field Intelligence</span>
   </div>
-  <div class="status-bar">
-    <div class="status-item"><div class="pulse"></div><span id="hdr-status">READY</span></div>
+  <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+    <div class="status-item" style="flex-shrink:0;"><div class="pulse"></div><span id="hdr-status">READY</span></div>
+    <button id="header-collapse-btn" onclick="toggleHeaderControls()" title="Toggle controls">⊟</button>
+    <div class="status-bar" id="header-controls">
     <div class="status-item" id="hdr-count" style="display:none">
       <span id="hdr-count-val">0</span> SIGHTINGS LOADED
     </div>
@@ -867,13 +1002,16 @@
     <div class="status-item">
       <span style="color:var(--text-mute)">SRC: iNaturalist API</span>
     </div>
-  </div>
+    </div><!-- /header-controls -->
+  </div><!-- /header wrapper -->
 </header>
 
 <div class="app-body">
 
   <!-- LEFT PANEL -->
-  <div class="left-panel">
+  <div class="left-panel" id="left-panel">
+    <button id="sidebar-tab" onclick="toggleSidebar()" title="Toggle panel">‹</button>
+    <div class="panel-inner">
 
     <div class="panel-section">
       <div class="panel-label">// Mission Parameters</div>
@@ -949,6 +1087,9 @@
         <div class="legend-row"><div class="legend-dot" style="background:#5a8f55"></div>ACTIVE      40–59</div>
         <div class="legend-row"><div class="legend-dot" style="background:#2a3628"></div>SPARSE      &lt;40</div>
       </div>
+      <div style="font-family:var(--font-mono);font-size:8px;color:var(--text-mute);margin-top:8px;line-height:1.5;letter-spacing:0.5px;">
+        Elevation, cover &amp; road pressure are<br>proxy estimates until terrain/road layers<br>are integrated.
+      </div>
     </div>
 
     <div class="panel-label" style="padding: 12px 16px 6px; flex-shrink:0;">// Hot Zones (Ranked)</div>
@@ -958,7 +1099,8 @@
       </div>
     </div>
 
-  </div>
+    </div><!-- /panel-inner -->
+  </div><!-- /left-panel -->
 
   <!-- MAP -->
   <div style="flex:1;position:relative;">
@@ -981,7 +1123,8 @@
       Cover Proxy · Road Pressure<br>
       <span style="color:var(--text-mute)">Toggle: GRID · HEAT · BOTH</span><br>
       <span style="color:var(--text-mute)">GMU UNITS: CPW Big Game Boundaries</span><br>
-      <span style="color:var(--text-mute)">Source: iNaturalist + CPW Open Data</span>
+      <span style="color:var(--text-mute)">Source: iNaturalist + CPW Open Data</span><br>
+      <span style="color:var(--red);font-size:8px">Always verify regulations &amp; land access with CPW before hunting.</span>
     </div>
   </div>
 
@@ -1026,6 +1169,7 @@
       <button class="ai-key-save" onclick="saveAPIKey()">SET KEY</button>
     </div>
     <div id="ai-key-status" class="ai-key-status">No key set</div>
+    <div class="ai-key-tip">⚑ Key lives in this browser tab only. Use a limited-scope or disposable key for best security.</div>
   </div>
 
   <div id="ai-messages">
@@ -1211,8 +1355,8 @@ async function loadAndShowGMU() {
 
         layer.bindPopup(`
           <div class="popup-title">GMU ${props.gmu}</div>
-          <div class="popup-row"><span>ELK DAU</span><span>${props.elkdau || '—'}</span></div>
-          <div class="popup-row"><span>COUNTY</span><span>${props.county}</span></div>
+          <div class="popup-row"><span>ELK DAU</span><span>${safe(props.elkdau) || '—'}</span></div>
+          <div class="popup-row"><span>COUNTY</span><span>${safe(props.county)}</span></div>
           <div class="popup-row"><span>AREA</span><span>${props.sqmi} sq mi</span></div>
           <div class="popup-row"><span>ELK SIGHTINGS</span><span>${count}</span></div>
           <div class="popup-row"><span>DENSITY</span><span>${density} / 100 mi²</span></div>
@@ -1467,7 +1611,15 @@ function buildGridCells(sightings, targetMonths, pressureWeight) {
       score: totalScore,
       elevCat,
       peakMonth: parseInt(peakMonth) || 0,
-      months: cell.months
+      months: cell.months,
+      // Factor breakdowns for popup display
+      factors: {
+        density: Math.round(densityScore),
+        season: Math.round(seaScore),
+        elevation: Math.round(elevScore),
+        cover: Math.round(covScore),
+        pressure: Math.round(presScore)
+      }
     };
   });
 }
@@ -1695,7 +1847,14 @@ function renderMap(sightings, cells) {
           <div class="popup-score-fill" style="width:${cell.score}%;background:${scoreBarColor}"></div>
         </div>
         <div class="popup-score-label">INTELLIGENCE SCORE: ${cell.score}/100</div>
-      `, { maxWidth: 220 });
+        ${cell.factors ? `<div style="margin-top:8px;border-top:1px solid #2a3628;padding-top:6px;font-family:monospace;font-size:9px;color:#6e7d6c;letter-spacing:1px;">SCORE BREAKDOWN</div>
+        <div class="popup-row" style="font-size:9px"><span>Density</span><span>${cell.factors.density}/40</span></div>
+        <div class="popup-row" style="font-size:9px"><span>Season</span><span>${cell.factors.season}/20</span></div>
+        <div class="popup-row" style="font-size:9px"><span>Elevation</span><span>${cell.factors.elevation}/20</span></div>
+        <div class="popup-row" style="font-size:9px"><span>Cover ⊘</span><span>${cell.factors.cover}/10</span></div>
+        <div class="popup-row" style="font-size:9px"><span>Pressure ⊘</span><span>${cell.factors.pressure}/10</span></div>
+        <div style="font-size:8px;color:#3a4838;margin-top:3px">⊘ proxy estimate</div>` : ''}
+      `, { maxWidth: 240 });
 
       markersLayer.addLayer(rect);
     });
@@ -1720,10 +1879,10 @@ function renderMap(sightings, cells) {
       const date = s.observed_on || 'Unknown';
       dot.bindPopup(`
         <div class="popup-title">ELK SIGHTING</div>
-        <div class="popup-row"><span>DATE</span><span>${date}</span></div>
-        <div class="popup-row"><span>OBSERVER</span><span>${s.user}</span></div>
-        <div class="popup-row"><span>QUALITY</span><span>${s.quality?.toUpperCase()}</span></div>
-        ${s.photo ? `<img src="${s.photo}" style="width:100%;margin-top:8px;border-radius:2px;border:1px solid #2a3628;">` : ''}
+        <div class="popup-row"><span>DATE</span><span>${safe(date)}</span></div>
+        <div class="popup-row"><span>OBSERVER</span><span>${safe(s.user)}</span></div>
+        <div class="popup-row"><span>QUALITY</span><span>${safe(s.quality?.toUpperCase())}</span></div>
+        ${safeUrl(s.photo) ? `<img src="${safeUrl(s.photo)}" style="width:100%;margin-top:8px;border-radius:2px;border:1px solid #2a3628;" onerror="this.style.display='none'">` : ''}
       `, { maxWidth: 200 });
 
       markersLayer.addLayer(dot);
@@ -1816,22 +1975,22 @@ Get your free key at <a href="https://console.groq.com" target="_blank">console.
   openai: {
     name: 'OpenAI',
     endpoint: 'https://api.openai.com/v1/chat/completions',
-    model: 'gpt-4o-mini',
+    model: 'gpt-5.4-mini',
     format: 'openai',
     keyPrefix: 'sk-',
     keyPlaceholder: 'sk-...',
     info: `Paid API — get key at <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a><br>
-<span class="info-model">Model: GPT-4o Mini (fast, affordable)</span>`
+<span class="info-model">Model: GPT-5.4 Mini (fast, affordable)</span>`
   },
   xai: {
     name: 'Grok (xAI)',
     endpoint: 'https://api.x.ai/v1/chat/completions',
-    model: 'grok-3-mini-fast',
+    model: 'grok-4.3',
     format: 'openai',
     keyPrefix: 'xai-',
     keyPlaceholder: 'xai-...',
     info: `Get key at <a href="https://console.x.ai" target="_blank">console.x.ai</a><br>
-<span class="info-model">Model: Grok 3 Mini</span>`
+<span class="info-model">Model: Grok 4.3 (current flagship)</span>`
   }
 };
 
@@ -2027,6 +2186,15 @@ function removeTyping() {
 function escapeHTML(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+function safe(val) {
+  return escapeHTML(String(val ?? ''));
+}
+function safeUrl(url) {
+  try {
+    const u = new URL(String(url ?? ''));
+    return u.protocol === 'https:' ? u.href : '';
+  } catch { return ''; }
+}
 
 // ── SEND MESSAGE ──────────────────────────────────────────────────────────
 async function sendAIMessage() {
@@ -2128,6 +2296,50 @@ async function sendAIMessage() {
   aiTyping = false;
   document.getElementById('ai-send').disabled = false;
 }
+
+
+// ─── PANEL COLLAPSE SYSTEM ────────────────────────────────────────────────
+
+let sidebarOpen = true;
+let headerControlsOpen = true;
+
+// On mobile, start with sidebar collapsed
+if (window.innerWidth <= 768) {
+  sidebarOpen = false;
+}
+
+function initPanelState() {
+  const panel = document.getElementById('left-panel');
+  const tab = document.getElementById('sidebar-tab');
+  if (!sidebarOpen) {
+    panel.classList.add('collapsed');
+    tab.textContent = '›';
+    tab.title = 'Show panel';
+  }
+}
+
+function toggleSidebar() {
+  const panel = document.getElementById('left-panel');
+  const tab = document.getElementById('sidebar-tab');
+  sidebarOpen = !sidebarOpen;
+  panel.classList.toggle('collapsed', !sidebarOpen);
+  tab.textContent = sidebarOpen ? '‹' : '›';
+  tab.title = sidebarOpen ? 'Hide panel' : 'Show panel';
+  // Let Leaflet know the map container size changed
+  setTimeout(() => map.invalidateSize(), 300);
+}
+
+function toggleHeaderControls() {
+  const controls = document.getElementById('header-controls');
+  const btn = document.getElementById('header-collapse-btn');
+  headerControlsOpen = !headerControlsOpen;
+  controls.classList.toggle('collapsed', !headerControlsOpen);
+  btn.textContent = headerControlsOpen ? '⊟' : '⊞';
+  btn.title = headerControlsOpen ? 'Hide controls' : 'Show controls';
+}
+
+// Init state after DOM ready
+setTimeout(initPanelState, 0);
 
 // ─── AUTO-RUN ON LOAD ─────────────────────────────────────────────────────
 map.whenReady(() => {
