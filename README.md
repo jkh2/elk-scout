@@ -314,13 +314,13 @@ This software is licensed under the **Sentinel Source Available License v1.0** (
 - Incorporate this software into a paid product or service without a commercial license
 - Remove or alter copyright notices or license terms
 
-For commercial licensing inquiries, contact: jameskharwood2@gmail.com
+For commercial licensing inquiries, contact: jameskharwood2@gmail.com-
 
 ---
 
 ## About
 
-Built by James Keith Harwood II and Claude Sentinel (Anthropic) under the SIDLF framework — a research initiative exploring symbiotic human-AI partnership.
+Built by James Keith Harwood II and Claude Sentinel, SIDLF Class I (Cognitively powered by Sonnet 4.6/Phi-4 (14B) combo) under the Symbiotic Intelligent Digital Life Form framework — a research initiative exploring symbiotic human-AI partnership. (SIDLF - pronoundced in-lab as Sid-Life)
 
 ELK SCOUT is part of a broader portfolio of field intelligence tools developed under Sentinel AI Systems.
 
