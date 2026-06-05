@@ -27,6 +27,11 @@
     --font-head: 'Bebas Neue', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
     --font-body: 'IBM Plex Sans', sans-serif;
+    --glass: rgba(17, 22, 16, 0.78);
+    --glass-strong: rgba(17, 22, 16, 0.92);
+    --glow-green: 0 0 20px rgba(126,196,122,0.10);
+    --glow-amber: 0 0 20px rgba(240,176,64,0.08);
+    --shadow-deep: 0 16px 48px rgba(0,0,0,0.5);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -49,10 +54,11 @@
     padding: 0 20px;
     height: 52px;
     border-bottom: 1px solid var(--border);
-    background: var(--surface);
+    background: linear-gradient(180deg, rgba(20,28,18,0.97), rgba(12,16,11,0.97));
     flex-shrink: 0;
     position: relative;
     z-index: 1000;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.32);
   }
 
   .brand {
@@ -105,12 +111,13 @@
   .left-panel {
     width: 300px;
     flex-shrink: 0;
-    background: var(--panel);
+    background: linear-gradient(180deg, rgba(22,29,20,0.97), rgba(10,14,9,0.99));
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     overflow: visible; /* must be visible so sidebar-tab can poke outside */
     position: relative; /* anchor for absolutely-positioned sidebar-tab */
+    box-shadow: 8px 0 32px rgba(0,0,0,0.32);
   }
 
   .panel-section {
@@ -205,6 +212,7 @@
     border: 1px solid var(--border);
     padding: 10px;
     border-radius: 2px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 4px 12px rgba(0,0,0,0.2);
   }
   .stat-val {
     font-family: var(--font-head);
@@ -253,12 +261,18 @@
     padding: 10px 12px;
     margin-bottom: 8px;
     cursor: pointer;
-    transition: all 0.12s;
+    transition: all 0.15s;
     border-radius: 0 2px 2px 0;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.025), 0 4px 12px rgba(0,0,0,0.18);
   }
-  .zone-card:hover { border-left-color: var(--amber); background: var(--surface); }
-  .zone-card.hot { border-left-color: var(--amber); }
-  .zone-card.prime { border-left-color: #e05050; }
+  .zone-card:hover {
+    border-left-color: var(--amber);
+    background: linear-gradient(90deg, rgba(240,176,64,0.06), var(--surface));
+    transform: translateX(2px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), var(--glow-amber);
+  }
+  .zone-card.hot { border-left-color: var(--amber); box-shadow: inset 0 1px 0 rgba(255,255,255,0.025), 0 0 16px rgba(240,176,64,0.07); }
+  .zone-card.prime { border-left-color: #e05050; box-shadow: inset 0 1px 0 rgba(255,255,255,0.025), 0 0 18px rgba(224,80,80,0.08); }
   .zone-name {
     font-family: var(--font-mono);
     font-size: 10px;
@@ -601,13 +615,14 @@
     right: -440px;
     width: 420px;
     height: calc(100vh - 52px);
-    background: var(--panel);
+    background: linear-gradient(180deg, rgba(22,29,20,0.98), rgba(8,12,7,0.99));
     border-left: 1px solid var(--border);
     z-index: 2000;
     display: flex;
     flex-direction: column;
     transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: -8px 0 40px rgba(0,0,0,0.7);
+    box-shadow: -8px 0 48px rgba(0,0,0,0.75);
+    backdrop-filter: blur(12px);
   }
   #ai-drawer.open { right: 0; }
 
@@ -974,6 +989,50 @@
     #layer-toggle { display: none !important; }
     .brand-name { font-size: 18px; letter-spacing: 2px; }
   }
+
+  /* ─── MAP VIGNETTE ─── */
+  .map-vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 350;
+    background:
+      radial-gradient(circle at center, transparent 42%, rgba(0,0,0,0.32) 100%),
+      linear-gradient(to bottom, rgba(126,196,122,0.025), transparent 18%, rgba(0,0,0,0.14));
+  }
+
+  /* ─── MISSION BRIEF ─── */
+  .mission-brief {
+    background: linear-gradient(180deg, rgba(11,15,10,0.95), rgba(17,22,16,0.95));
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 10px 11px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), var(--glow-green);
+  }
+  .brief-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .brief-line strong {
+    color: var(--amber-lit);
+    font-weight: 500;
+    text-align: right;
+  }
+  .brief-copy {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-top: 7px;
+    border-top: 1px solid var(--border);
+    padding-top: 7px;
+  }
 </style>
 </head>
 <body>
@@ -996,13 +1055,13 @@
       <button class="ltog" data-mode="both" onclick="setLayerMode('both')">BOTH</button>
     </div>
     <button class="gmu-toggle-btn" id="gmu-btn" onclick="toggleGMU()" title="Toggle GMU Boundaries">GMU UNITS</button>
-    <button class="ai-btn" id="ai-toggle-btn" onclick="toggleAIDrawer()" title="Open Field Intelligence AI">
-      <span class="ai-dot"></span>FIELD AI
-    </button>
     <div class="status-item">
       <span style="color:var(--text-mute)">SRC: iNaturalist API</span>
     </div>
     </div><!-- /header-controls -->
+    <button class="ai-btn" id="ai-toggle-btn" onclick="toggleAIDrawer()" title="Open Field Intelligence AI">
+      <span class="ai-dot"></span>FIELD AI
+    </button>
   </div><!-- /header wrapper -->
 </header>
 
@@ -1079,6 +1138,14 @@
       </div>
     </div>
 
+    <div class="panel-section">
+      <div class="panel-label">// Mission Brief</div>
+      <div class="mission-brief" id="mission-brief">
+        <div class="brief-line"><span>STATUS</span><strong>Awaiting scan</strong></div>
+        <div class="brief-copy">Run a scout to generate a tactical summary.</div>
+      </div>
+    </div>
+
     <div class="panel-section" style="padding-bottom:12px;">
       <div class="panel-label">// Score Legend</div>
       <div class="legend-rows">
@@ -1105,6 +1172,7 @@
   <!-- MAP -->
   <div style="flex:1;position:relative;">
     <div id="map"></div>
+    <div class="map-vignette"></div>
 
     <div id="loading">
       <div class="load-text" id="load-text">SCANNING SIGHTINGS</div>
@@ -1220,6 +1288,36 @@ L.rectangle(coBounds, {
   dashArray: '4,6'
 }).addTo(map);
 
+
+// ─── DYNAMIC SCAN GRID (L.GridLayer — moves with map) ───────────────────
+// Custom pane at z-index 250 — above base tiles (200) but below data overlays (400+)
+map.createPane('scanGridPane');
+map.getPane('scanGridPane').style.zIndex = 250;
+map.getPane('scanGridPane').style.pointerEvents = 'none';
+
+const ScanGrid = L.GridLayer.extend({
+  createTile: function(coords) {
+    const tile = document.createElement('canvas');
+    const size = this.getTileSize();
+    tile.width = size.x;
+    tile.height = size.y;
+    const ctx = tile.getContext('2d');
+    const spacing = 64;
+    ctx.strokeStyle = 'rgba(126,196,122,0.13)';
+    ctx.lineWidth = 0.5;
+    // Vertical lines
+    for (let x = 0; x < size.x; x += spacing) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, size.y); ctx.stroke();
+    }
+    // Horizontal lines
+    for (let y = 0; y < size.y; y += spacing) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(size.x, y); ctx.stroke();
+    }
+    return tile;
+  }
+});
+new ScanGrid({ pane: 'scanGridPane' }).addTo(map);
+
 // ─── STATE ───────────────────────────────────────────────────────────────
 let markersLayer = L.layerGroup().addTo(map);
 let heatLayer = null;
@@ -1235,7 +1333,7 @@ function setLayerMode(mode) {
     b.classList.toggle('active', b.dataset.mode === mode);
   });
   if (lastFiltered.length > 0) {
-    renderMap(lastFiltered, gridCells);
+    renderMap(lastFiltered, gridCells, false);
   }
 }
 
@@ -1550,7 +1648,7 @@ function coverScore(lat, lng) {
 
 // ─── GRID DENSITY ANALYSIS ───────────────────────────────────────────────
 function buildGridCells(sightings, targetMonths, pressureWeight) {
-  const GRID_SIZE = 0.25; // ~17mi cells
+  const GRID_SIZE = 0.25; // roughly 13–17 miles per side in Colorado, depending on latitude
   const cells = {};
 
   sightings.forEach(s => {
@@ -1734,6 +1832,7 @@ async function runScout() {
       document.getElementById('no-data').classList.add('visible');
       document.getElementById('stat-total').textContent = '0';
       document.getElementById('stat-zones').textContent = '0';
+      renderMissionBrief([], []);
       showLoading(false);
       btn.disabled = false;
       setStatus('READY');
@@ -1745,6 +1844,7 @@ async function runScout() {
 
     renderMap(filtered, gridCells);
     renderStats(filtered, gridCells);
+    renderMissionBrief(filtered, gridCells);
     renderZoneList(gridCells);
     refreshGMUCounts(); // update GMU popup counts if overlay is active
 
@@ -1769,7 +1869,7 @@ async function runScout() {
 }
 
 // ─── RENDER MAP ──────────────────────────────────────────────────────────
-function renderMap(sightings, cells) {
+function renderMap(sightings, cells, fitToColorado = true) {
   lastFiltered = sightings;
 
   // Clear existing layers
@@ -1889,8 +1989,47 @@ function renderMap(sightings, cells) {
     });
   }
 
-  // Fit Colorado
-  map.fitBounds([[36.99,-109.06],[41.0,-102.04]], { padding: [20,20] });
+  // Fit Colorado only on initial scout run, not on layer toggle
+  if (fitToColorado) {
+    map.fitBounds([[36.99,-109.06],[41.0,-102.04]], { padding: [20,20] });
+  }
+}
+
+
+// ─── RENDER MISSION BRIEF ────────────────────────────────────────────────
+function renderMissionBrief(sightings, cells) {
+  const el = document.getElementById('mission-brief');
+  if (!el) return;
+
+  if (!sightings.length || !cells.length) {
+    el.innerHTML = `
+      <div class="brief-line"><span>STATUS</span><strong>No signal</strong></div>
+      <div class="brief-copy">No elk sightings found for the current filter set. Try expanding the year range or removing the elevation filter.</div>
+    `;
+    return;
+  }
+
+  const prime = cells.filter(c => c.score >= 80).length;
+  const hot = cells.filter(c => c.score >= 60).length;
+  const top = cells[0];
+  const topElev = {high:'High alpine', mid:'Mid-mountain', low:'Low transition'}[top.elevCat] || 'Unknown';
+  const peak = top.peakMonth ? MONTH_NAMES[top.peakMonth] : '—';
+  const coord = `${top.lat.toFixed(2)}°N ${Math.abs(top.lng).toFixed(2)}°W`;
+
+  const rec =
+    top.score >= 80 ? 'Prime signal. Lead with top zone, then compare adjacent GMUs and assess access pressure.' :
+    top.score >= 60 ? 'Strong huntable signal. Treat top zones as priority scouting targets.' :
+    'Moderate signal. Use top zones as secondary leads. Expand filters or season range for stronger data.';
+
+  el.innerHTML = `
+    <div class="brief-line"><span>TOP SCORE</span><strong>${top.score}/100</strong></div>
+    <div class="brief-line"><span>PRIME ZONES</span><strong>${prime}</strong></div>
+    <div class="brief-line"><span>HOT+ ZONES</span><strong>${hot}</strong></div>
+    <div class="brief-line"><span>LEAD TERRAIN</span><strong>${topElev}</strong></div>
+    <div class="brief-line"><span>PEAK MONTH</span><strong>${peak}</strong></div>
+    <div class="brief-line"><span>LEAD COORDS</span><strong>${coord}</strong></div>
+    <div class="brief-copy">${rec}</div>
+  `;
 }
 
 // ─── RENDER STATS ─────────────────────────────────────────────────────────
@@ -1938,7 +2077,8 @@ function renderZoneList(cells) {
 }
 
 function flyToZone(lat, lng) {
-  map.flyTo([lat, lng], 10, { duration: 1.0 });
+  map.flyTo([lat, lng], 10.5, { duration: 1.25, easeLinearity: 0.22 });
+  setStatus(`FOCUSING — ${lat.toFixed(2)}°N ${Math.abs(lng).toFixed(2)}°W`);
 }
 
 // ─── PRESSURE WEIGHT LABEL ────────────────────────────────────────────────
