@@ -444,6 +444,35 @@
   .ltog:hover { color: var(--text); background: var(--border); }
   .ltog.active { background: var(--green-dim); color: var(--green-lit); }
 
+  /* ─── BASE LAYER TOGGLE ─── */
+  .base-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 2px;
+  }
+  .btog {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: all 0.12s;
+  }
+  .btog:hover { color: var(--text); background: var(--border); }
+  .btog.active { background: #1a1a10; color: var(--amber-lit); border: none; }
+
+  /* Satellite mode — disable the dark filter so terrain colors show through */
+  .leaflet-container.sat-mode .leaflet-tile {
+    filter: none;
+  }
+
   /* ─── GMU TOGGLE BUTTON ─── */
   .gmu-toggle-btn {
     background: transparent;
@@ -1054,6 +1083,10 @@
       <button class="ltog" data-mode="heat" onclick="setLayerMode('heat')">HEAT</button>
       <button class="ltog" data-mode="both" onclick="setLayerMode('both')">BOTH</button>
     </div>
+    <div class="base-toggle" id="base-toggle">
+      <button class="btog active" data-base="map" onclick="setBaseLayer('map')">MAP</button>
+      <button class="btog" data-base="sat" onclick="setBaseLayer('sat')">SAT</button>
+    </div>
     <button class="gmu-toggle-btn" id="gmu-btn" onclick="toggleGMU()" title="Toggle GMU Boundaries">GMU UNITS</button>
     <div class="status-item">
       <span style="color:var(--text-mute)">SRC: iNaturalist API</span>
@@ -1274,10 +1307,46 @@ const map = L.map('map', {
   zoomControl: true
 });
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap',
-  maxZoom: 18
-}).addTo(map);
+// ─── BASE TILE LAYERS ────────────────────────────────────────────────────
+const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  maxZoom: 19
+});
+
+const satLayer = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {
+    attribution: 'Imagery © Esri, Maxar, Earthstar Geographics',
+    maxZoom: 19
+  }
+);
+
+// Start with street layer
+streetLayer.addTo(map);
+let activeBaseLayer = 'map';
+
+function setBaseLayer(mode) {
+  if (mode === activeBaseLayer) return;
+  activeBaseLayer = mode;
+
+  // Swap tile layers
+  if (mode === 'sat') {
+    map.removeLayer(streetLayer);
+    satLayer.addTo(map);
+    // Bring scan grid back on top (tile layers go to back on add)
+    // Satellite: disable dark filter so terrain colors show
+    map.getContainer().classList.add('sat-mode');
+  } else {
+    map.removeLayer(satLayer);
+    streetLayer.addTo(map);
+    map.getContainer().classList.remove('sat-mode');
+  }
+
+  // Update button states
+  document.querySelectorAll('.btog').forEach(b => {
+    b.classList.toggle('active', b.dataset.base === mode);
+  });
+}
 
 // Colorado rough boundary overlay
 const coBounds = [[36.99, -109.06],[41.0, -102.04]];
