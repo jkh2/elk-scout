@@ -1,5 +1,5 @@
 # ELK SCOUT — Colorado Field Intelligence
-**Real sighting data. Five-factor scoring. AI-powered analysis. Zero guesswork.**
+**Real sighting data. Transparent scoring. AI-powered field analysis. Less guesswork.**
 
 A browser-based elk scouting intelligence tool for Colorado hunters, built on verified citizen science data from iNaturalist and official CPW Game Management Unit boundaries. ELK SCOUT analyzes thousands of research-grade elk observations to surface where animals are actually showing up — broken down by elevation, cover, season, and road pressure — then lets you interrogate the data with an embedded AI hunting analyst.
 
@@ -17,7 +17,7 @@ No guessing, no outdated paper maps — pattern intelligence derived from real o
 
 ## Five-Factor Scoring Model
 
-Every 0.25° grid cell (~17 square miles) across Colorado is scored 0–100 based on:
+Every 0.25° grid cell — roughly 17 miles north/south by 13–14 miles east/west at Colorado latitudes (~220–240 sq mi) — is scored 0–100 based on:
 
 | Factor | Weight | What It Measures |
 |---|---|---|
@@ -70,8 +70,8 @@ An embedded AI hunting analyst lives in the right-side drawer. It has full conte
 |---|---|---|---|
 | **Groq** | Llama 3.3 70B | **Free tier** | [console.groq.com](https://console.groq.com) |
 | Claude | claude-haiku-4-5 | Paid | [console.anthropic.com](https://console.anthropic.com) |
-| OpenAI | GPT-4o Mini | Paid | [platform.openai.com](https://platform.openai.com/api-keys) |
-| Grok (xAI) | grok-3-mini | Paid | [console.x.ai](https://console.x.ai) |
+| OpenAI | GPT-5.4 Mini | Paid | [platform.openai.com](https://platform.openai.com/api-keys) |
+| Grok (xAI) | grok-4.3 | Paid | [console.x.ai](https://console.x.ai) |
 
 > **Free path:** Create a Groq account (email only, no credit card), generate an API key, paste it in. Under two minutes.
 
@@ -232,6 +232,8 @@ The app makes live API calls to iNaturalist on load. An internet connection is r
 **Research-grade only.** The iNaturalist API is filtered to `quality_grade=research` — observations that have been community-verified. Casual or unverified sightings are excluded.
 
 **AI Field Intelligence requires your own API key.** The AI chat is BYOK — bring your own key. Groq offers a free tier with no credit card required. Keys are never stored beyond your browser session.
+
+**Not legal hunting advice.** ELK SCOUT shows where elk have been observed — it does not guarantee elk presence, land access, or legal hunting permission. Always verify current CPW regulations, season dates, bag limits, and land ownership before hunting. Trespassing and out-of-season harvest are your responsibility to avoid.
 
 ---
 
