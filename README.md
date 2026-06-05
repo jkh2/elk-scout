@@ -7,7 +7,7 @@ A browser-based elk scouting intelligence tool for Colorado hunters, built on ve
 
 ---
 
-## What It Does
+## What It Does Now
 
 ELK SCOUT pulls live, verified elk sighting data from the iNaturalist API, applies a five-factor scoring model to every grid cell across Colorado, and renders the results as an interactive map with ranked hot zones. An embedded AI Field Intelligence analyst — powered by your choice of provider — can interpret your results, explain the scoring, and give you tactical hunting advice calibrated to the actual data on screen.
 
