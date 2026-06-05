@@ -1,4 +1,4 @@
-# ELK SCOUT — Colorado Field Intelligence
+# ELK SCOUT v1.1 — Colorado Field Intelligence
 **Real sighting data. Transparent scoring. AI-powered field analysis. Less guesswork.**
 
 A browser-based elk scouting intelligence tool for Colorado hunters, built on verified citizen science data from iNaturalist and official CPW Game Management Unit boundaries. ELK SCOUT analyzes thousands of research-grade elk observations to surface where animals are actually showing up — broken down by elevation, cover, season, and road pressure — then lets you interrogate the data with an embedded AI hunting analyst.
@@ -95,8 +95,25 @@ Quick-prompt buttons cover the most common questions; the chat supports full mul
 
 ### Hot Zones Panel
 - Ranked list of top 25 scoring zones
-- Click any zone card to fly the map to that location
+- Click any zone card to fly the map to that location — smooth animated fly-to with status update
 - Each card shows: composite score, sighting count, elevation band, peak activity month
+
+### Mission Brief
+After each scout run, a tactical summary panel generates automatically below Signal Summary:
+- Top score, prime zone count, hot zone count, lead terrain type, peak month, lead coordinates
+- Tactical recommendation that adjusts based on signal strength — tells you what to do, not just what the numbers mean
+- Updates on every re-scan with new filters
+
+### Score Breakdown in Popups
+Click any zone rectangle on the map to see the full five-factor breakdown — Density/Season/Elevation/Cover/Pressure shown individually, with proxy factors labeled as estimates.
+
+### UI & Map Polish (v1.1)
+- **Dynamic scan grid** — a subtle tactical grid rendered via `L.GridLayer`, moves and scales with the map as you zoom and pan
+- **Map vignette** — soft radial darkening at map edges for field-console depth
+- **Layer toggle preserves view** — switching GRID/HEAT/BOTH no longer resets the map to full Colorado
+- **Glass/depth panel styling** — gradient panels, depth shadows, hover animations on zone cards
+- **Collapsible panels** — sidebar collapses to icon rail via `‹/›` tab; header controls collapse via `⊟/⊞` button; FIELD AI always accessible
+- **Mobile responsive** — sidebar starts collapsed on mobile, AI drawer goes full-width, touch-friendly tap targets
 
 ---
 
@@ -116,9 +133,11 @@ index.html
 │   ├── Grid cell builder          — 0.25° cells, sighting aggregation
 │   ├── Five-factor scorer         — Density + season + elevation + cover + pressure
 │   ├── renderMap()                — Grid rectangles + heat layer + sighting dots
+│   ├── renderMissionBrief()       — Tactical summary with signal-strength recommendation
 │   ├── GMU loader                 — Lazy fetch, L.layerGroup wrapper, label markers
 │   ├── refreshGMUCounts()         — Rebuilds GMU counts after each new scout run
 │   ├── Point-in-polygon           — Ray casting for GMU sighting counts
+│   ├── ScanGrid (L.GridLayer)     — Dynamic canvas grid, moves with map zoom/pan
 │   └── Field Intelligence AI      — Multi-provider BYOK chat with live session context
 └── External dependencies (CDN)
     ├── leaflet@1.9.4
@@ -151,10 +170,11 @@ buildGridCells()
   → sort by score descending
         │
         ▼
-renderMap()      →  GRID / HEAT / BOTH layer
-renderStats()    →  summary panel
-renderZoneList() →  ranked sidebar
-refreshGMUCounts() → rebuild GMU overlay if active
+renderMap()            →  GRID / HEAT / BOTH layer (view preserved on layer toggle)
+renderStats()          →  summary panel
+renderMissionBrief()   →  tactical brief with recommendation
+renderZoneList()       →  ranked sidebar
+refreshGMUCounts()     →  rebuild GMU overlay if active
         │
         ▼
 [Optional] GMU UNITS button
@@ -239,13 +259,23 @@ The app makes live API calls to iNaturalist on load. An internet connection is r
 
 ## Roadmap
 
+**Shipped in v1.1:**
+- [x] Mobile-friendly responsive layout with collapsible panels
+- [x] Mission Brief tactical summary panel
+- [x] Score factor breakdown in zone popups
+- [x] Dynamic scan grid (L.GridLayer, moves with map)
+- [x] Layer toggle preserves map view
+- [x] Glass/depth UI polish
+- [x] FIELD AI always accessible (outside collapsible header)
+
+**Planned:**
 - [ ] Real elevation data via OpenTopoData / USGS 3DEP API
 - [ ] USFS road layer for true pressure-distance scoring
 - [ ] User-submitted sightings as a second data flywheel
 - [ ] Species toggle (mule deer, pronghorn)
 - [ ] Multi-state support
 - [ ] Offline mode with cached sighting data
-- [x] Mobile-friendly responsive layout with collapsible panels
+- [ ] 3D terrain mode via MapLibre GL (v2 map engine)
 
 ---
 
