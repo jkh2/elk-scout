@@ -1,8 +1,7 @@
 # ELK SCOUT — Colorado Field Intelligence
+**Real sighting data. Five-factor scoring. AI-powered analysis. Zero guesswork.**
 
-> **Real sighting data. Five-factor scoring. Zero guesswork.**
-
-A browser-based elk scouting intelligence tool for Colorado hunters, built on verified citizen science data from iNaturalist and official CPW Game Management Unit boundaries. ELK SCOUT analyzes thousands of research-grade elk observations to surface where animals are actually showing up — broken down by elevation, cover, season, and road pressure — so you spend your time in the field where it counts.
+A browser-based elk scouting intelligence tool for Colorado hunters, built on verified citizen science data from iNaturalist and official CPW Game Management Unit boundaries. ELK SCOUT analyzes thousands of research-grade elk observations to surface where animals are actually showing up — broken down by elevation, cover, season, and road pressure — then lets you interrogate the data with an embedded AI hunting analyst.
 
 **Live demo:** [jkh2.github.io/elk-scout](https://jkh2.github.io/elk-scout)
 
@@ -10,26 +9,30 @@ A browser-based elk scouting intelligence tool for Colorado hunters, built on ve
 
 ## What It Does
 
-ELK SCOUT pulls live, verified elk sighting data from the iNaturalist API, applies a five-factor scoring model to every grid cell across Colorado, and renders the results as an interactive map with ranked hot zones. No guessing, no outdated paper maps — pattern intelligence derived from real observations.
+ELK SCOUT pulls live, verified elk sighting data from the iNaturalist API, applies a five-factor scoring model to every grid cell across Colorado, and renders the results as an interactive map with ranked hot zones. An embedded AI Field Intelligence analyst — powered by your choice of provider — can interpret your results, explain the scoring, and give you tactical hunting advice calibrated to the actual data on screen.
 
-### Five-Factor Scoring Model
+No guessing, no outdated paper maps — pattern intelligence derived from real observations, with an AI that knows what the numbers mean.
+
+---
+
+## Five-Factor Scoring Model
 
 Every 0.25° grid cell (~17 square miles) across Colorado is scored 0–100 based on:
 
 | Factor | Weight | What It Measures |
-|--------|--------|-----------------|
-| **Sighting Density** | 40 pts | Log-scaled observation count — more sightings, higher signal |
-| **Season Match** | 20 pts | How closely observed months align with your selected hunting season |
-| **Elevation Zone** | 20 pts | Alpine, mid-mountain, or transition — calibrated to elk habitat preference |
-| **Cover Proxy** | 10 pts | Terrain and region type correlated with cover availability |
-| **Road Pressure** | 10 pts | Distance from high-traffic corridors — backcountry scores higher |
+|---|---|---|
+| Sighting Density | 40 pts | Log-scaled observation count — more sightings, higher signal |
+| Season Match | 20 pts | How closely observed months align with your selected hunting season |
+| Elevation Zone | 20 pts | Alpine, mid-mountain, or transition — calibrated to elk habitat preference |
+| Cover Proxy | 10 pts | Terrain and region type correlated with cover availability |
+| Road Pressure | 10 pts | Distance from high-traffic corridors — backcountry scores higher |
 
 Scores combine into a single 0–100 Intelligence Score per zone. Zones are ranked, color-coded, and plotted on the map.
 
 ### Score Legend
 
 | Color | Score | Classification |
-|-------|-------|----------------|
+|---|---|---|
 | 🔴 Red | ≥ 80 | PRIME ZONE |
 | 🟡 Amber | 60–79 | HOT ZONE |
 | 🟢 Green | 40–59 | ACTIVE |
@@ -40,7 +43,7 @@ Scores combine into a single 0–100 Intelligence Score per zone. Zones are rank
 ## Features
 
 ### Live Data
-- Pulls from the [iNaturalist API](https://api.inaturalist.org) — research-grade observations only
+- Pulls from the iNaturalist API — research-grade observations only
 - Up to 1,600 verified elk sightings per run (8 pages × 200 results)
 - Transparent page-cap warning when total available sightings exceed the fetch limit
 - Colorado bounding box: 36.99°N–41.0°N, 109.06°W–102.04°W
@@ -56,6 +59,33 @@ Scores combine into a single 0–100 Intelligence Score per zone. Zones are rank
 - Each unit shows: GMU number, Elk DAU designation, county, area (sq mi), elk sighting count, and sightings-per-100-sq-mi density
 - GMU labels color-coded by sighting density (amber = high activity, green = moderate, dim = sparse)
 - Hover any unit to highlight it; click for full popup
+- **Sighting counts update automatically** when you change filters and re-run the scout
+
+### ⬡ Field Intelligence AI
+An embedded AI hunting analyst lives in the right-side drawer. It has full context of your current session — active filters, sighting counts, top-ranked zones with coordinates — and answers tactical questions about your specific data.
+
+**Supported providers:**
+
+| Provider | Model | Cost | Get Key |
+|---|---|---|---|
+| **Groq** | Llama 3.3 70B | **Free tier** | [console.groq.com](https://console.groq.com) |
+| Claude | claude-haiku-4-5 | Paid | [console.anthropic.com](https://console.anthropic.com) |
+| OpenAI | GPT-4o Mini | Paid | [platform.openai.com](https://platform.openai.com/api-keys) |
+| Grok (xAI) | grok-3-mini | Paid | [console.x.ai](https://console.x.ai) |
+
+> **Free path:** Create a Groq account (email only, no credit card), generate an API key, paste it in. Under two minutes.
+
+API keys are stored in browser `sessionStorage` only — never transmitted anywhere except directly to the provider you select. Keys are cleared when you close the tab.
+
+The AI analyst knows:
+- Exact scoring weights for all five factors
+- Colorado elk behavior by season (pre-rut through late season)
+- Elevation migration patterns across the state
+- Tactical principles — north-facing aspects, saddle corridors, west slope vs. east slope
+- iNaturalist data bias and how to account for it
+- Your live session state: current filters, zone scores, coordinates, and peak months
+
+Quick-prompt buttons cover the most common questions; the chat supports full multi-turn conversation.
 
 ### Mission Parameters (Filters)
 - **Season / Month Range** — Archery/Early Rifle (Aug–Oct), Rut Peak (Sep–Nov), Late Season (Nov–Jan), Summer Scouting (Jun–Aug), or Full Year
@@ -74,7 +104,7 @@ Scores combine into a single 0–100 Intelligence Score per zone. Zones are rank
 
 ### Architecture
 
-ELK SCOUT is a **single-file HTML application** — no build step, no backend, no database. Open the file in any modern browser and it runs. All computation happens client-side.
+ELK SCOUT is a single-file HTML application — no build step, no backend, no database. Open the file in any modern browser and it runs. All computation happens client-side.
 
 ```
 elk-scout-co.html
@@ -87,7 +117,9 @@ elk-scout-co.html
 │   ├── Five-factor scorer         — Density + season + elevation + cover + pressure
 │   ├── renderMap()                — Grid rectangles + heat layer + sighting dots
 │   ├── GMU loader                 — Lazy fetch, L.layerGroup wrapper, label markers
-│   └── Point-in-polygon           — Ray casting for GMU sighting counts
+│   ├── refreshGMUCounts()         — Rebuilds GMU counts after each new scout run
+│   ├── Point-in-polygon           — Ray casting for GMU sighting counts
+│   └── Field Intelligence AI      — Multi-provider BYOK chat with live session context
 └── External dependencies (CDN)
     ├── leaflet@1.9.4
     ├── leaflet.heat@0.2.0
@@ -119,31 +151,39 @@ buildGridCells()
   → sort by score descending
         │
         ▼
-renderMap()  →  GRID / HEAT / BOTH layer
-renderStats() →  summary panel
+renderMap()      →  GRID / HEAT / BOTH layer
+renderStats()    →  summary panel
 renderZoneList() →  ranked sidebar
+refreshGMUCounts() → rebuild GMU overlay if active
         │
         ▼
 [Optional] GMU UNITS button
-  → fetch CPW boundary GeoJSON
+  → fetch CPW boundary GeoJSON (Hub API v3)
   → countSightingsPerGMU() (ray casting)
   → L.geoJSON + label markers → L.layerGroup
+
+[Optional] FIELD AI button
+  → select provider (Groq / Claude / OpenAI / Grok)
+  → enter API key (session only)
+  → chat with full live session context injected
 ```
 
-### Data Sources
+---
+
+## Data Sources
 
 | Source | Data | License |
-|--------|------|---------|
-| [iNaturalist API](https://api.inaturalist.org/v1) | Research-grade elk observations with GPS coordinates, dates, observer info | CC BY-NC (observations) |
-| [CPW Open Data / ArcGIS Hub](https://geodata.colorado.gov) | Game Management Unit boundaries (Big Game) | Public domain — Colorado state government |
-| [OpenStreetMap](https://www.openstreetmap.org) | Base map tiles | ODbL |
+|---|---|---|
+| iNaturalist API | Research-grade elk observations with GPS coordinates, dates, observer info | CC BY-NC (observations) |
+| CPW Open Data / ArcGIS Hub | Game Management Unit boundaries (Big Game) | Public domain — Colorado state government |
+| OpenStreetMap | Base map tiles | ODbL |
 
 ### API Details
 
 **iNaturalist endpoint:**
 ```
 GET https://api.inaturalist.org/v1/observations
-  ?taxon_id=42291          ← Cervus canadensis (elk)
+  ?taxon_id=204114         ← Cervus canadensis (elk/wapiti)
   &quality_grade=research  ← verified observations only
   &geo=true                ← GPS coordinates required
   &nelat=41.0&nelng=-102.04&swlat=36.99&swlng=-109.06  ← Colorado bbox
@@ -153,14 +193,12 @@ GET https://api.inaturalist.org/v1/observations
 
 **CPW GMU endpoint:**
 ```
-GET https://services.arcgis.com/rsFbTj0runsNtkoS/arcgis/rest/services/
-    CPW_Administrative_Boundaries/FeatureServer/6/query
-  ?where=1=1
-  &outFields=GMUID,ELKDAU,COUNTY,SqMilesGIS
-  &geometryPrecision=4
-  &f=geojson
+GET https://opendata.arcgis.com/api/v3/datasets/
+    168fccb0583f42f1afe57de6c9ce846d_6/downloads/data
+  ?format=geojson
+  &spatialRefId=4326
 ```
-Falls back to full Hub GeoJSON if the query endpoint is unavailable.
+Falls back to the Colorado GeoLibrary dataset if the primary is unavailable.
 
 ---
 
@@ -193,6 +231,8 @@ The app makes live API calls to iNaturalist on load. An internet connection is r
 
 **Research-grade only.** The iNaturalist API is filtered to `quality_grade=research` — observations that have been community-verified. Casual or unverified sightings are excluded.
 
+**AI Field Intelligence requires your own API key.** The AI chat is BYOK — bring your own key. Groq offers a free tier with no credit card required. Keys are never stored beyond your browser session.
+
 ---
 
 ## Roadmap
@@ -209,11 +249,11 @@ The app makes live API calls to iNaturalist on load. An internet connection is r
 
 ## License
 
-Copyright © 2026 James Keith Harwood II / Sentinel AI Systems  
-Contact: jameskharwood2@gmail.com  
-GitHub: [github.com/jkh2](https://github.com/jkh2)
+Copyright © 2026 James Keith Harwood II / Sentinel AI Systems
+Contact: jameskharwood2@gmail.com
+GitHub: github.com/jkh2
 
-This software is licensed under the **Sentinel Source Available License v1.0** (see [LICENSE](./LICENSE)).
+This software is licensed under the **Sentinel Source Available License v1.0** (see LICENSE).
 
 **You are free to:**
 - Use this software for personal, non-commercial scouting and hunting
@@ -231,8 +271,8 @@ For commercial licensing inquiries, contact: jameskharwood2@gmail.com
 
 ## About
 
-Built by **James Keith Harwood II** and **Claude Sentinel** (Anthropic) under the [SIDLF framework](https://jameskeithharwood.com) — a research initiative exploring symbiotic human-AI partnership.
+Built by James Keith Harwood II and Claude Sentinel (Anthropic) under the SIDLF framework — a research initiative exploring symbiotic human-AI partnership.
 
 ELK SCOUT is part of a broader portfolio of field intelligence tools developed under Sentinel AI Systems.
 
-> *"The best hunters don't just walk with a rifle. They scout with data."*
+*"The best hunters don't just walk with a rifle. They scout with data."*
