@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELK SCOUT — Colorado Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<style>
+  :root {
+    --bg:        #0b0f0a;
+    --surface:   #111610;
+    --panel:     #161d14;
+    --border:    #2a3628;
+    --green-dim: #3a5c38;
+    --green:     #5a8f55;
+    --green-lit: #7ec47a;
+    --amber:     #c8891a;
+    --amber-lit: #f0b040;
+    --red:       #c04030;
+    --text:      #c8d4c6;
+    --text-dim:  #6e7d6c;
+    --text-mute: #3a4838;
+    --font-head: 'Bebas Neue', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 52px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1000;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .brand-name {
+    font-family: var(--font-head);
+    font-size: 26px;
+    letter-spacing: 3px;
+    color: var(--green-lit);
+    line-height: 1;
+  }
+  .brand-sub {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .pulse {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green-lit);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; } 50% { opacity:0.2; }
+  }
+  .status-item { display: flex; align-items: center; gap: 6px; }
+
+  /* ─── LAYOUT ─── */
+  .app-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ─── LEFT PANEL ─── */
+  .left-panel {
+    width: 300px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-section {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* Filters */
+  .filter-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .filter-group label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+  select, input[type=range] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 6px 8px;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+  }
+  select:focus { border-color: var(--green); }
+  input[type=range] {
+    padding: 0;
+    height: 3px;
+    accent-color: var(--green-lit);
+    cursor: pointer;
+  }
+  .range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-mute);
+    margin-top: 3px;
+  }
+  .val-display {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--amber);
+    text-align: right;
+    margin-top: 2px;
+  }
+
+  /* Run button */
+  .btn-run {
+    width: 100%;
+    padding: 11px;
+    background: var(--green-dim);
+    border: 1px solid var(--green);
+    color: var(--green-lit);
+    font-family: var(--font-head);
+    font-size: 16px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+    margin-top: 4px;
+  }
+  .btn-run:hover { background: var(--green); color: var(--bg); }
+  .btn-run:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .stat-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 10px;
+    border-radius: 2px;
+  }
+  .stat-val {
+    font-family: var(--font-head);
+    font-size: 22px;
+    color: var(--amber-lit);
+    line-height: 1;
+  }
+  .stat-lbl {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    letter-spacing: 1px;
+  }
+
+  /* Score legend */
+  .legend-rows { display: flex; flex-direction: column; gap: 6px; }
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Hot zones list */
+  .zones-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+  }
+  .zones-list::-webkit-scrollbar { width: 3px; }
+  .zones-list::-webkit-scrollbar-track { background: transparent; }
+  .zones-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .zone-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green-dim);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.12s;
+    border-radius: 0 2px 2px 0;
+  }
+  .zone-card:hover { border-left-color: var(--amber); background: var(--surface); }
+  .zone-card.hot { border-left-color: var(--amber); }
+  .zone-card.prime { border-left-color: #e05050; }
+  .zone-name {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+  }
+  .zone-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .zone-tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    letter-spacing: 0.5px;
+  }
+  .tag-score { background: #1a2a18; color: var(--green-lit); }
+  .tag-sightings { background: #1a1a10; color: var(--amber); }
+  .tag-elev { background: #12121a; color: #8080c8; }
+
+  /* ─── MAP ─── */
+  #map {
+    flex: 1;
+    position: relative;
+    height: 100%;
+  }
+
+  /* Leaflet dark override */
+  .leaflet-tile { filter: brightness(0.55) saturate(0.5) hue-rotate(60deg); }
+  .leaflet-container { background: var(--bg); }
+
+  /* Loading overlay */
+  #loading {
+    position: absolute;
+    inset: 0;
+    background: rgba(11,15,10,0.85);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    gap: 16px;
+    display: none;
+  }
+  #loading.active { display: flex; }
+  .load-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--green-lit);
+    letter-spacing: 2px;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .load-bar-wrap {
+    width: 200px;
+    height: 2px;
+    background: var(--border);
+  }
+  .load-bar {
+    height: 100%;
+    background: var(--green-lit);
+    width: 0%;
+    transition: width 0.4s;
+  }
+  #load-status {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  /* Map info panel */
+  .map-info {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(17,22,16,0.92);
+    border: 1px solid var(--border);
+    padding: 12px 14px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    z-index: 400;
+    max-width: 200px;
+    line-height: 1.6;
+    border-radius: 2px;
+  }
+  .map-info strong { color: var(--text); }
+
+  /* Cluster custom */
+  .elk-cluster {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    border: 2px solid;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Score ring on map popup */
+  .leaflet-popup-content-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+  }
+  .leaflet-popup-content { color: var(--text); margin: 12px 14px; }
+  .leaflet-popup-tip { background: var(--panel); }
+  .leaflet-popup-close-button { color: var(--text-dim) !important; }
+
+  .popup-title {
+    font-family: var(--font-head);
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--green-lit);
+    margin-bottom: 8px;
+  }
+  .popup-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 3px;
+  }
+  .popup-row span:last-child { color: var(--text); }
+  .popup-score-bar {
+    height: 3px;
+    background: var(--border);
+    margin-top: 8px;
+    border-radius: 2px;
+  }
+  .popup-score-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+  .popup-score-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    text-align: right;
+  }
+
+  /* ─── LAYER TOGGLE ─── */
+  .layer-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 2px;
+  }
+  .ltog {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: all 0.12s;
+  }
+  .ltog:hover { color: var(--text); background: var(--border); }
+  .ltog.active { background: var(--green-dim); color: var(--green-lit); }
+
+  /* ─── GMU TOGGLE BUTTON ─── */
+  .gmu-toggle-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    padding: 5px 11px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+  .gmu-toggle-btn:hover { border-color: var(--green); color: var(--green-lit); }
+  .gmu-toggle-btn.active { border-color: var(--amber); color: var(--amber-lit); background: #1a1500; }
+
+  /* ─── GMU LABEL TOOLTIP ─── */
+  .gmu-label {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--amber);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    text-shadow: 0 0 4px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,1);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  /* No data message */
+  .no-data {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-family: var(--font-mono);
+    color: var(--text-dim);
+    font-size: 12px;
+    z-index: 300;
+    display: none;
+  }
+  .no-data.visible { display: block; }
+
+  /* Error toast */
+  #error-toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2a1010;
+    border: 1px solid var(--red);
+    color: #f08070;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 10px 18px;
+    border-radius: 2px;
+    z-index: 9999;
+    display: none;
+    max-width: 420px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  #error-toast.show { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-name">ELK SCOUT</span>
+    <span class="brand-sub">Colorado Field Intelligence</span>
+  </div>
+  <div class="status-bar">
+    <div class="status-item"><div class="pulse"></div><span id="hdr-status">READY</span></div>
+    <div class="status-item" id="hdr-count" style="display:none">
+      <span id="hdr-count-val">0</span> SIGHTINGS LOADED
+    </div>
+    <div class="layer-toggle" id="layer-toggle" style="display:none">
+      <button class="ltog active" data-mode="grid" onclick="setLayerMode('grid')">GRID</button>
+      <button class="ltog" data-mode="heat" onclick="setLayerMode('heat')">HEAT</button>
+      <button class="ltog" data-mode="both" onclick="setLayerMode('both')">BOTH</button>
+    </div>
+    <button class="gmu-toggle-btn" id="gmu-btn" onclick="toggleGMU()" title="Toggle GMU Boundaries">GMU UNITS</button>
+    <div class="status-item">
+      <span style="color:var(--text-mute)">SRC: iNaturalist API</span>
+    </div>
+  </div>
+</header>
+
+<div class="app-body">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+
+    <div class="panel-section">
+      <div class="panel-label">// Mission Parameters</div>
+      <div class="filter-row">
+
+        <div class="filter-group">
+          <label>SEASON / MONTH RANGE</label>
+          <select id="sel-month">
+            <option value="">Full Year (All Months)</option>
+            <option value="8,9,10" selected>Archery / Early Rifle (Aug–Oct)</option>
+            <option value="9,10,11">Rut Peak (Sep–Nov)</option>
+            <option value="11,12,1">Late Season (Nov–Jan)</option>
+            <option value="6,7,8">Summer Scouting (Jun–Aug)</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>YEARS OF DATA</label>
+          <select id="sel-years">
+            <option value="2">Last 2 Years</option>
+            <option value="5" selected>Last 5 Years</option>
+            <option value="10">Last 10 Years</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>ROAD PRESSURE WEIGHT <span class="val-display" id="pressure-val">HIGH</span></label>
+          <input type="range" id="pressure-weight" min="0" max="2" step="1" value="2">
+          <div class="range-labels"><span>IGNORE</span><span>MODERATE</span><span>HIGH</span></div>
+        </div>
+
+        <div class="filter-group">
+          <label>ELEVATION ZONE</label>
+          <select id="sel-elev">
+            <option value="all" selected>All Elevations</option>
+            <option value="low">Low (&lt;8,000 ft) — Transition</option>
+            <option value="mid">Mid (8,000–10,500 ft) — Prime</option>
+            <option value="high">High (&gt;10,500 ft) — Alpine</option>
+          </select>
+        </div>
+
+        <button class="btn-run" id="btn-run" onclick="runScout()">▶ RUN SCOUT</button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label">// Signal Summary</div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-val" id="stat-total">—</div>
+          <div class="stat-lbl">SIGHTINGS</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-zones">—</div>
+          <div class="stat-lbl">HOT ZONES</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-peak">—</div>
+          <div class="stat-lbl">PEAK MONTH</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-top-score">—</div>
+          <div class="stat-lbl">TOP SCORE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section" style="padding-bottom:12px;">
+      <div class="panel-label">// Score Legend</div>
+      <div class="legend-rows">
+        <div class="legend-row"><div class="legend-dot" style="background:#e05050"></div>PRIME ZONE  ≥80</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#f0b040"></div>HOT ZONE    60–79</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#5a8f55"></div>ACTIVE      40–59</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#2a3628"></div>SPARSE      &lt;40</div>
+      </div>
+    </div>
+
+    <div class="panel-label" style="padding: 12px 16px 6px; flex-shrink:0;">// Hot Zones (Ranked)</div>
+    <div class="zones-list" id="zones-list">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-mute);text-align:center;padding:20px 0;">
+        Run a scout to see ranked zones
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAP -->
+  <div style="flex:1;position:relative;">
+    <div id="map"></div>
+
+    <div id="loading">
+      <div class="load-text" id="load-text">SCANNING SIGHTINGS</div>
+      <div class="load-bar-wrap"><div class="load-bar" id="load-bar"></div></div>
+      <div id="load-status">Connecting to iNaturalist API...</div>
+    </div>
+
+    <div class="no-data" id="no-data">
+      No elk sightings found for current filters.<br>
+      <span style="color:var(--text-mute)">Try expanding year range or removing elevation filter.</span>
+    </div>
+
+    <div class="map-info">
+      <strong>Five-Factor Score</strong><br>
+      Density · Season · Elevation<br>
+      Cover Proxy · Road Pressure<br>
+      <span style="color:var(--text-mute)">Toggle: GRID · HEAT · BOTH</span><br>
+      <span style="color:var(--text-mute)">GMU UNITS: CPW Big Game Boundaries</span><br>
+      <span style="color:var(--text-mute)">Source: iNaturalist + CPW Open Data</span>
+    </div>
+  </div>
+
+</div>
+
+<div id="error-toast"></div>
+
+<script>
+// ─── MAP INIT ───────────────────────────────────────────────────────────
+const map = L.map('map', {
+  center: [39.0, -105.5],
+  zoom: 7,
+  zoomControl: true
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap',
+  maxZoom: 18
+}).addTo(map);
+
+// Colorado rough boundary overlay
+const coBounds = [[36.99, -109.06],[41.0, -102.04]];
+L.rectangle(coBounds, {
+  color: '#3a5c38',
+  weight: 1.5,
+  fillOpacity: 0,
+  dashArray: '4,6'
+}).addTo(map);
+
+// ─── STATE ───────────────────────────────────────────────────────────────
+let markersLayer = L.layerGroup().addTo(map);
+let heatLayer = null;
+let allSightings = [];
+let gridCells = [];
+let layerMode = 'grid'; // 'grid' | 'heat' | 'both'
+let lastFiltered = [];
+
+// ─── LAYER MODE ──────────────────────────────────────────────────────────
+function setLayerMode(mode) {
+  layerMode = mode;
+  document.querySelectorAll('.ltog').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  if (lastFiltered.length > 0) {
+    renderMap(lastFiltered, gridCells);
+  }
+}
+
+// ─── GMU LAYER ───────────────────────────────────────────────────────────
+let gmuLayer = null;
+let gmuVisible = false;
+let gmuLoaded = false;
+let gmuLoading = false;
+
+// ArcGIS query endpoint — fetches only needed fields, reduces coordinate precision server-side
+// This brings the payload from ~26MB down to ~1-2MB
+const GMU_GEOJSON_URL = 'https://services.arcgis.com/rsFbTj0runsNtkoS/arcgis/rest/services/CPW_Administrative_Boundaries/FeatureServer/6/query?where=1%3D1&outFields=GMUID%2CELKDAU%2CCOUNTY%2CSqMilesGIS&f=geojson&geometryPrecision=4&outSR=4326';
+
+// Fallback to full Hub download if the above 404s (URL may change with service updates)
+const GMU_FALLBACK_URL = 'https://opendata.arcgis.com/datasets/168fccb0583f42f1afe57de6c9ce846d_6.geojson';
+
+// Build sighting count per GMU for the info panel
+function countSightingsPerGMU(sightings, gmuFeatures) {
+  const counts = {};
+  if (!sightings.length || !gmuFeatures.length) return counts;
+
+  // For each sighting find which GMU polygon contains it
+  // Simple point-in-bounding-box first, then proper test
+  gmuFeatures.forEach(f => {
+    counts[f.properties.gmu] = 0;
+  });
+
+  sightings.forEach(s => {
+    const pt = [s.lng, s.lat];
+    for (const f of gmuFeatures) {
+      if (pointInGeoJSONFeature(pt, f)) {
+        counts[f.properties.gmu] = (counts[f.properties.gmu] || 0) + 1;
+        break;
+      }
+    }
+  });
+  return counts;
+}
+
+// Minimal point-in-polygon (ray casting, handles Polygon + MultiPolygon)
+function pointInGeoJSONFeature(pt, feature) {
+  const geom = feature.geometry;
+  if (!geom) return false;
+  if (geom.type === 'Polygon') return pointInPolygon(pt, geom.coordinates);
+  if (geom.type === 'MultiPolygon') return geom.coordinates.some(poly => pointInPolygon(pt, poly));
+  return false;
+}
+
+function pointInPolygon(pt, rings) {
+  // Quick bbox check first
+  const ring = rings[0];
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const c of ring) {
+    if (c[0] < minX) minX = c[0]; if (c[0] > maxX) maxX = c[0];
+    if (c[1] < minY) minY = c[1]; if (c[1] > maxY) maxY = c[1];
+  }
+  if (pt[0] < minX || pt[0] > maxX || pt[1] < minY || pt[1] > maxY) return false;
+
+  // Ray casting
+  let inside = false;
+  const [x, y] = pt;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1];
+    const xj = ring[j][0], yj = ring[j][1];
+    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+async function loadAndShowGMU() {
+  if (gmuLoading) return;
+  gmuLoading = true;
+  const btn = document.getElementById('gmu-btn');
+  btn.textContent = 'LOADING…';
+  btn.style.opacity = '0.5';
+
+  try {
+    setStatus('LOADING GMU…');
+
+    // Try the lightweight query endpoint first (~1-2MB), fall back to full Hub download (~26MB)
+    let geojson;
+    try {
+      const resp = await fetch(GMU_GEOJSON_URL);
+      if (!resp.ok) throw new Error('primary endpoint failed');
+      geojson = await resp.json();
+      if (!geojson.features?.length) throw new Error('empty response');
+    } catch {
+      setStatus('LOADING GMU (fallback)…');
+      const resp2 = await fetch(GMU_FALLBACK_URL);
+      if (!resp2.ok) throw new Error(`GMU fetch failed: ${resp2.status}`);
+      geojson = await resp2.json();
+    }
+
+    // Simplify properties for display — only keep what we need
+    geojson.features = geojson.features.map(f => ({
+      ...f,
+      properties: {
+        gmu: f.properties.GMUID,
+        elkdau: f.properties.ELKDAU || '',
+        county: f.properties.COUNTY || '',
+        sqmi: Math.round(f.properties.SqMilesGIS || 0)
+      }
+    }));
+
+    // Build sighting counts per GMU if we have data
+    const gmuCounts = countSightingsPerGMU(lastFiltered, geojson.features);
+
+    gmuLayer = L.layerGroup();
+
+    const gmuGeoJSON = L.geoJSON(geojson, {
+      style: gmuStyle,
+      onEachFeature: (feature, layer) => {
+        const props = feature.properties;
+        const count = gmuCounts[props.gmu] || 0;
+        const density = props.sqmi > 0 ? (count / props.sqmi * 100).toFixed(1) : '0';
+
+        layer.bindPopup(`
+          <div class="popup-title">GMU ${props.gmu}</div>
+          <div class="popup-row"><span>ELK DAU</span><span>${props.elkdau || '—'}</span></div>
+          <div class="popup-row"><span>COUNTY</span><span>${props.county}</span></div>
+          <div class="popup-row"><span>AREA</span><span>${props.sqmi} sq mi</span></div>
+          <div class="popup-row"><span>ELK SIGHTINGS</span><span>${count}</span></div>
+          <div class="popup-row"><span>DENSITY</span><span>${density} / 100 mi²</span></div>
+        `, { maxWidth: 220 });
+
+        layer.on('mouseover', function() {
+          this.setStyle({ weight: 2, fillOpacity: 0.18, color: '#f0b040' });
+        });
+        layer.on('mouseout', function() {
+          gmuGeoJSON.resetStyle(this);
+        });
+      }
+    });
+    gmuLayer.addLayer(gmuGeoJSON);
+
+    // Add GMU number labels at centroid — all tracked inside gmuLayer
+    geojson.features.forEach(f => {
+      try {
+        const centroid = getPolygonCentroid(f.geometry);
+        if (!centroid) return;
+        const count = gmuCounts[f.properties.gmu] || 0;
+        const labelColor = count > 10 ? '#f0b040' : count > 3 ? '#7ec47a' : '#4a5a48';
+        const labelMarker = L.marker([centroid[1], centroid[0]], {
+          icon: L.divIcon({
+            className: 'gmu-label',
+            html: `<span style="color:${labelColor}">${f.properties.gmu}</span>`,
+            iconSize: [40, 16],
+            iconAnchor: [20, 8]
+          }),
+          interactive: false
+        });
+        gmuLayer.addLayer(labelMarker);
+      } catch(e) {}
+    });
+
+    gmuLayer.addTo(map);
+    gmuLoaded = true;
+    gmuVisible = true;
+    setStatus(lastFiltered.length > 0
+      ? `${lastFiltered.length} SIGHTINGS — GMU OVERLAY ACTIVE`
+      : 'GMU OVERLAY ACTIVE');
+
+  } catch(e) {
+    showError('GMU load failed: ' + e.message);
+    console.error(e);
+  }
+
+  btn.textContent = 'GMU UNITS';
+  btn.style.opacity = '1';
+  btn.classList.toggle('active', gmuVisible);
+  gmuLoading = false;
+}
+
+function gmuStyle() {
+  return {
+    color: '#c8891a',
+    weight: 1.0,
+    fillOpacity: 0.04,
+    fillColor: '#c8891a',
+    dashArray: '3,5'
+  };
+}
+
+function getPolygonCentroid(geometry) {
+  let ring;
+  if (geometry.type === 'Polygon') {
+    ring = geometry.coordinates[0];
+  } else if (geometry.type === 'MultiPolygon') {
+    // Use the largest polygon's outer ring
+    let maxLen = 0;
+    for (const poly of geometry.coordinates) {
+      if (poly[0].length > maxLen) { maxLen = poly[0].length; ring = poly[0]; }
+    }
+  }
+  if (!ring || ring.length < 3) return null;
+  // Simple average centroid
+  let sumX = 0, sumY = 0;
+  for (const c of ring) { sumX += c[0]; sumY += c[1]; }
+  return [sumX / ring.length, sumY / ring.length];
+}
+
+function toggleGMU() {
+  const btn = document.getElementById('gmu-btn');
+  if (!gmuLoaded) {
+    loadAndShowGMU();
+    return;
+  }
+  if (gmuVisible) {
+    map.removeLayer(gmuLayer);
+    gmuVisible = false;
+  } else {
+    gmuLayer.addTo(map);
+    gmuVisible = true;
+  }
+  btn.classList.toggle('active', gmuVisible);
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────
+const MONTH_NAMES = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function setLoadBar(pct) {
+  document.getElementById('load-bar').style.width = pct + '%';
+}
+function setLoadStatus(msg) {
+  document.getElementById('load-status').textContent = msg;
+}
+function setLoadText(msg) {
+  document.getElementById('load-text').textContent = msg;
+}
+function showLoading(v) {
+  document.getElementById('loading').classList.toggle('active', v);
+}
+function setStatus(msg) {
+  document.getElementById('hdr-status').textContent = msg;
+}
+function showError(msg) {
+  const el = document.getElementById('error-toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 6000);
+}
+
+function scoreColor(score) {
+  if (score >= 80) return '#e05050';
+  if (score >= 60) return '#f0b040';
+  if (score >= 40) return '#5a8f55';
+  return '#2a3628';
+}
+
+function elevCategory(lat, lng) {
+  // Rough Colorado elevation proxy by lat/lng region
+  // Western slope / San Juans / high country
+  const highZones = [
+    {latMin:37.4, latMax:38.5, lngMin:-108.5, lngMax:-106.5},
+    {latMin:38.5, latMax:40.0, lngMin:-107.5, lngMax:-105.5},
+    {latMin:39.0, latMax:40.5, lngMin:-106.5, lngMax:-105.2},
+  ];
+  const midZones = [
+    {latMin:37.0, latMax:39.5, lngMin:-109.0, lngMax:-107.5},
+    {latMin:39.0, latMax:41.0, lngMin:-108.5, lngMax:-106.5},
+    {latMin:38.0, latMax:40.5, lngMin:-106.0, lngMax:-104.5},
+  ];
+  for (const z of highZones) {
+    if (lat >= z.latMin && lat <= z.latMax && lng >= z.lngMin && lng <= z.lngMax) return 'high';
+  }
+  for (const z of midZones) {
+    if (lat >= z.latMin && lat <= z.latMax && lng >= z.lngMin && lng <= z.lngMax) return 'mid';
+  }
+  return 'low';
+}
+
+function roadPressureScore(lat, lng) {
+  // Low score = high pressure (near major roads/cities). Rough proxy.
+  // Front range / urban = low, backcountry = high
+  const frontRange = lng > -105.5;
+  const nearI70 = lat > 39.5 && lat < 40.0 && lng > -107.0 && lng < -105.5;
+  const nearI25 = lng > -105.0 && lng < -104.5;
+  if (nearI25) return 10;
+  if (frontRange && !nearI70) return 25;
+  if (nearI70) return 40;
+  return 75; // backcountry west slope
+}
+
+function seasonScore(month, targetMonths) {
+  if (!targetMonths || targetMonths.length === 0) return 100; // no filter = no penalty
+  const inSeason = targetMonths.includes(month);
+  const adjacent = targetMonths.some(m => Math.abs(m - month) === 1 || Math.abs(m - month) === 11);
+  if (inSeason) return 100;
+  if (adjacent) return 60;
+  return 20;
+}
+
+function coverScore(lat, lng) {
+  // Proxy: Western slope and mountain parks have better cover
+  const western = lng < -106.5;
+  const mountain = lat > 37.5 && lat < 40.5;
+  if (western && mountain) return 90;
+  if (mountain) return 65;
+  return 40;
+}
+
+// ─── GRID DENSITY ANALYSIS ───────────────────────────────────────────────
+function buildGridCells(sightings, targetMonths, pressureWeight) {
+  const GRID_SIZE = 0.25; // ~17mi cells
+  const cells = {};
+
+  sightings.forEach(s => {
+    const lat = s.lat;
+    const lng = s.lng;
+    const cellLat = Math.floor(lat / GRID_SIZE) * GRID_SIZE;
+    const cellLng = Math.floor(lng / GRID_SIZE) * GRID_SIZE;
+    const key = `${cellLat.toFixed(2)},${cellLng.toFixed(2)}`;
+
+    if (!cells[key]) {
+      cells[key] = {
+        lat: cellLat + GRID_SIZE/2,
+        lng: cellLng + GRID_SIZE/2,
+        cellLat, cellLng,
+        sightings: [],
+        months: {}
+      };
+    }
+    cells[key].sightings.push(s);
+    const m = parseInt(s.observed_on?.split('-')[1]) || 0;
+    cells[key].months[m] = (cells[key].months[m] || 0) + 1;
+  });
+
+  return Object.values(cells).map(cell => {
+    const count = cell.sightings.length;
+    // Density score (log scaled, max 40 pts)
+    const densityScore = Math.min(40, Math.log(count + 1) * 12);
+
+    // Season consistency score (max 20 pts)
+    const seaScore = seasonScore(
+      parseInt(Object.entries(cell.months).sort((a,b)=>b[1]-a[1])[0]?.[0] || 9),
+      targetMonths
+    ) * 0.20;
+
+    // Elevation score (max 20 pts)
+    const elevCat = elevCategory(cell.lat, cell.lng);
+    const elevScore = { high: 20, mid: 18, low: 8 }[elevCat];
+
+    // Cover proxy (max 10 pts)
+    const covScore = coverScore(cell.lat, cell.lng) * 0.10;
+
+    // Road pressure (max 10 pts, weighted)
+    const rawPressure = roadPressureScore(cell.lat, cell.lng) * 0.10;
+    const pressureMultiplier = [0.5, 1.0, 1.5][pressureWeight] || 1.0;
+    const presScore = Math.min(10, rawPressure * pressureMultiplier);
+
+    const totalScore = Math.min(100, Math.round(densityScore + seaScore + elevScore + covScore + presScore));
+
+    // Peak month
+    const peakMonth = Object.entries(cell.months).sort((a,b) => b[1]-a[1])[0]?.[0];
+
+    return {
+      lat: cell.lat,
+      lng: cell.lng,
+      cellLat: cell.cellLat,
+      cellLng: cell.cellLng,
+      count,
+      score: totalScore,
+      elevCat,
+      peakMonth: parseInt(peakMonth) || 0,
+      months: cell.months
+    };
+  });
+}
+
+// ─── iNATURALIST FETCH ───────────────────────────────────────────────────
+async function fetchElkSightings(yearsBack, monthFilter) {
+  const ELK_TAXON_ID = 42291; // Cervus canadensis
+  const PER_PAGE = 200;
+  const MAX_PAGES = 8;
+  const yearNow = new Date().getFullYear();
+  const d1 = `${yearNow - yearsBack}-01-01`;
+  const d2 = `${yearNow}-12-31`;
+
+  // Colorado bounding box
+  const nelat = 41.0, nelng = -102.04;
+  const swlat = 36.99, swlng = -109.06;
+
+  let all = [];
+  let page = 1;
+  let total = null;
+
+  while (page <= MAX_PAGES) {
+    setLoadStatus(`Fetching page ${page}${total ? ' of ~' + Math.ceil(total/PER_PAGE) : ''}...`);
+    setLoadBar(Math.min(90, (page / MAX_PAGES) * 90));
+
+    let url = `https://api.inaturalist.org/v1/observations?taxon_id=${ELK_TAXON_ID}&nelat=${nelat}&nelng=${nelng}&swlat=${swlat}&swlng=${swlng}&d1=${d1}&d2=${d2}&quality_grade=research&geo=true&per_page=${PER_PAGE}&page=${page}&order_by=observed_on&order=desc`;
+
+    try {
+      const resp = await fetch(url, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!resp.ok) throw new Error(`API error ${resp.status}`);
+      const data = await resp.json();
+
+      if (total === null) total = data.total_results;
+
+      const obs = data.results.filter(r => r.location).map(r => {
+        const [lat, lng] = r.location.split(',').map(Number);
+        return {
+          lat, lng,
+          id: r.id,
+          observed_on: r.observed_on,
+          quality: r.quality_grade,
+          user: r.user?.login || 'anon',
+          photo: r.photos?.[0]?.url?.replace('square','small')
+        };
+      });
+
+      all = all.concat(obs);
+
+      if (all.length >= total || data.results.length < PER_PAGE) break;
+      page++;
+
+      // Respect rate limits
+      await new Promise(r => setTimeout(r, 250));
+    } catch(e) {
+      throw new Error('iNaturalist API unavailable: ' + e.message);
+    }
+  }
+
+  // Warn if we hit the page cap before loading all results
+  if (total !== null && all.length < total) {
+    console.warn(`Page cap reached: loaded ${all.length} of ${total} sightings`);
+    // Surface to user via status — non-blocking
+    setLoadStatus(`Note: showing ${all.length} of ${total} total sightings (cap reached)`);
+    await new Promise(r => setTimeout(r, 1200));
+  }
+
+  return all;
+}
+
+// ─── MAIN RUN ────────────────────────────────────────────────────────────
+async function runScout() {
+  const btn = document.getElementById('btn-run');
+  btn.disabled = true;
+  document.getElementById('no-data').classList.remove('visible');
+  showLoading(true);
+  setStatus('SCANNING');
+  setLoadBar(0);
+  setLoadText('SCANNING SIGHTINGS');
+
+  const yearsBack = parseInt(document.getElementById('sel-years').value);
+  const monthSel = document.getElementById('sel-month').value;
+  const targetMonths = monthSel ? monthSel.split(',').map(Number) : [];
+  const pressureWeight = parseInt(document.getElementById('pressure-weight').value);
+  const elevFilter = document.getElementById('sel-elev').value;
+
+  try {
+    setLoadStatus('Connecting to iNaturalist API...');
+    allSightings = await fetchElkSightings(yearsBack, targetMonths);
+
+    // Apply month filter client-side
+    let filtered = allSightings;
+    if (targetMonths.length > 0) {
+      filtered = allSightings.filter(s => {
+        const m = parseInt(s.observed_on?.split('-')[1]) || 0;
+        return targetMonths.includes(m);
+      });
+    }
+
+    // Apply elevation filter
+    if (elevFilter !== 'all') {
+      filtered = filtered.filter(s => elevCategory(s.lat, s.lng) === elevFilter);
+    }
+
+    setLoadStatus('Analyzing sighting patterns...');
+    setLoadBar(92);
+    setLoadText('COMPUTING SCORES');
+    await new Promise(r => setTimeout(r, 300));
+
+    if (filtered.length === 0) {
+      document.getElementById('no-data').classList.add('visible');
+      document.getElementById('stat-total').textContent = '0';
+      document.getElementById('stat-zones').textContent = '0';
+      showLoading(false);
+      btn.disabled = false;
+      setStatus('READY');
+      return;
+    }
+
+    gridCells = buildGridCells(filtered, targetMonths, pressureWeight);
+    gridCells.sort((a,b) => b.score - a.score);
+
+    renderMap(filtered, gridCells);
+    renderStats(filtered, gridCells);
+    renderZoneList(gridCells);
+
+    setLoadBar(100);
+    setLoadStatus('Complete.');
+    await new Promise(r => setTimeout(r, 400));
+    showLoading(false);
+    setStatus(`${filtered.length} SIGHTINGS — ${gridCells.filter(c=>c.score>=60).length} HOT ZONES`);
+
+    document.getElementById('hdr-count').style.display = 'flex';
+    document.getElementById('hdr-count-val').textContent = filtered.length;
+    document.getElementById('layer-toggle').style.display = 'flex';
+
+  } catch(e) {
+    showLoading(false);
+    setStatus('ERROR');
+    showError('⚠ ' + (e.message || 'Failed to load data. Check your connection.'));
+    console.error(e);
+  }
+
+  btn.disabled = false;
+}
+
+// ─── RENDER MAP ──────────────────────────────────────────────────────────
+function renderMap(sightings, cells) {
+  lastFiltered = sightings;
+
+  // Clear existing layers
+  markersLayer.clearLayers();
+  if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
+
+  const showGrid = layerMode === 'grid' || layerMode === 'both';
+  const showHeat = layerMode === 'heat' || layerMode === 'both';
+
+  // ── HEAT LAYER ──────────────────────────────────────────────────────
+  if (showHeat && sightings.length > 0) {
+    // Weight each point by the score of the cell it sits in —
+    // so hotspots glow brighter, not just dense-but-low-value clusters.
+    const cellScoreMap = {};
+    cells.forEach(c => {
+      const key = `${Math.floor(c.lat/0.25)*0.25},${Math.floor(c.lng/0.25)*0.25}`;
+      cellScoreMap[key] = c.score;
+    });
+
+    const heatPoints = sightings.map(s => {
+      const cellKey = `${Math.floor(s.lat/0.25)*0.25},${Math.floor(s.lng/0.25)*0.25}`;
+      const weight = (cellScoreMap[cellKey] || 20) / 100;
+      return [s.lat, s.lng, weight];
+    });
+
+    heatLayer = L.heatLayer(heatPoints, {
+      radius: 28,
+      blur: 22,
+      maxZoom: 10,
+      max: 1.0,
+      minOpacity: 0.25,
+      // Tactical thermal palette: transparent → dark green → amber → red
+      gradient: {
+        0.0:  'transparent',
+        0.15: '#1a2e18',
+        0.35: '#3a6e35',
+        0.55: '#8fbe50',
+        0.72: '#d4901a',
+        0.88: '#e05020',
+        1.0:  '#ff1a00'
+      }
+    }).addTo(map);
+  }
+
+  // ── GRID LAYER ──────────────────────────────────────────────────────
+  if (showGrid) {
+    cells.forEach(cell => {
+      if (cell.count < 1) return;
+      const color = scoreColor(cell.score);
+      // In "both" mode, make grid cells more transparent so heat shows through
+      const baseOpacity = layerMode === 'both' ? 0.06 : 0.10;
+      const opacity = baseOpacity + (cell.score / 100) * (layerMode === 'both' ? 0.22 : 0.40);
+
+      const rect = L.rectangle(
+        [[cell.cellLat, cell.cellLng],[cell.cellLat + 0.25, cell.cellLng + 0.25]],
+        {
+          color: color,
+          weight: layerMode === 'both' ? 0.3 : 0.5,
+          fillColor: color,
+          fillOpacity: opacity
+        }
+      );
+
+      const peakMonthName = MONTH_NAMES[cell.peakMonth] || '?';
+      const elevLabel = {high:'HIGH ALPINE',mid:'MID MOUNTAIN',low:'LOW TRANSITION'}[cell.elevCat];
+      const scoreBarColor = scoreColor(cell.score);
+
+      rect.bindPopup(`
+        <div class="popup-title">ZONE ANALYSIS</div>
+        <div class="popup-row"><span>SIGHTINGS</span><span>${cell.count}</span></div>
+        <div class="popup-row"><span>PEAK MONTH</span><span>${peakMonthName}</span></div>
+        <div class="popup-row"><span>ELEVATION</span><span>${elevLabel}</span></div>
+        <div class="popup-row"><span>COORDS</span><span>${cell.lat.toFixed(2)}°N, ${Math.abs(cell.lng).toFixed(2)}°W</span></div>
+        <div class="popup-score-bar">
+          <div class="popup-score-fill" style="width:${cell.score}%;background:${scoreBarColor}"></div>
+        </div>
+        <div class="popup-score-label">INTELLIGENCE SCORE: ${cell.score}/100</div>
+      `, { maxWidth: 220 });
+
+      markersLayer.addLayer(rect);
+    });
+
+    // Individual sighting dots in top-scored zones
+    const topCellKeys = new Set(
+      cells.filter(c => c.score >= 60).map(c => `${Math.floor(c.lat/0.25)*0.25},${Math.floor(c.lng/0.25)*0.25}`)
+    );
+
+    sightings.forEach(s => {
+      const cellKey = `${Math.floor(s.lat/0.25)*0.25},${Math.floor(s.lng/0.25)*0.25}`;
+      if (!topCellKeys.has(cellKey)) return;
+
+      const dot = L.circleMarker([s.lat, s.lng], {
+        radius: 3,
+        color: '#f0b040',
+        weight: 1,
+        fillColor: '#f0b040',
+        fillOpacity: 0.7
+      });
+
+      const date = s.observed_on || 'Unknown';
+      dot.bindPopup(`
+        <div class="popup-title">ELK SIGHTING</div>
+        <div class="popup-row"><span>DATE</span><span>${date}</span></div>
+        <div class="popup-row"><span>OBSERVER</span><span>${s.user}</span></div>
+        <div class="popup-row"><span>QUALITY</span><span>${s.quality?.toUpperCase()}</span></div>
+        ${s.photo ? `<img src="${s.photo}" style="width:100%;margin-top:8px;border-radius:2px;border:1px solid #2a3628;">` : ''}
+      `, { maxWidth: 200 });
+
+      markersLayer.addLayer(dot);
+    });
+  }
+
+  // Fit Colorado
+  map.fitBounds([[36.99,-109.06],[41.0,-102.04]], { padding: [20,20] });
+}
+
+// ─── RENDER STATS ─────────────────────────────────────────────────────────
+function renderStats(sightings, cells) {
+  document.getElementById('stat-total').textContent = sightings.length;
+  document.getElementById('stat-zones').textContent = cells.filter(c => c.score >= 60).length;
+  document.getElementById('stat-top-score').textContent = cells[0]?.score || '—';
+
+  // Peak month across all sightings
+  const monthCounts = {};
+  sightings.forEach(s => {
+    const m = parseInt(s.observed_on?.split('-')[1]) || 0;
+    if (m) monthCounts[m] = (monthCounts[m] || 0) + 1;
+  });
+  const peakM = Object.entries(monthCounts).sort((a,b)=>b[1]-a[1])[0]?.[0];
+  document.getElementById('stat-peak').textContent = peakM ? MONTH_NAMES[parseInt(peakM)] : '—';
+}
+
+// ─── RENDER ZONE LIST ─────────────────────────────────────────────────────
+function renderZoneList(cells) {
+  const list = document.getElementById('zones-list');
+  const top = cells.slice(0, 25);
+
+  if (top.length === 0) {
+    list.innerHTML = '<div style="font-family:var(--font-mono);font-size:10px;color:var(--text-mute);text-align:center;padding:20px 0;">No zones found</div>';
+    return;
+  }
+
+  list.innerHTML = top.map((cell, i) => {
+    const cl = cell.score >= 80 ? 'prime' : cell.score >= 60 ? 'hot' : '';
+    const peakLabel = cell.peakMonth ? MONTH_NAMES[cell.peakMonth] : '?';
+    const elevShort = {high:'ALPINE',mid:'MID',low:'LOW'}[cell.elevCat];
+    return `
+      <div class="zone-card ${cl}" onclick="flyToZone(${cell.lat},${cell.lng})">
+        <div class="zone-name">#${i+1} — ${cell.lat.toFixed(2)}°N ${Math.abs(cell.lng).toFixed(2)}°W</div>
+        <div class="zone-meta">
+          <span class="zone-tag tag-score">⬡ ${cell.score}</span>
+          <span class="zone-tag tag-sightings">◈ ${cell.count} SIGHTINGS</span>
+          <span class="zone-tag tag-elev">▲ ${elevShort}</span>
+          <span class="zone-tag" style="background:#181a18;color:var(--text-dim)">PEAK ${peakLabel}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function flyToZone(lat, lng) {
+  map.flyTo([lat, lng], 10, { duration: 1.0 });
+}
+
+// ─── PRESSURE WEIGHT LABEL ────────────────────────────────────────────────
+document.getElementById('pressure-weight').addEventListener('input', function() {
+  const labels = ['IGNORE','MODERATE','HIGH'];
+  document.getElementById('pressure-val').textContent = labels[this.value];
+});
+
+// ─── AUTO-RUN ON LOAD ─────────────────────────────────────────────────────
+map.whenReady(() => {
+  setTimeout(runScout, 200);
+});
+</script>
+</body>
+</html>
