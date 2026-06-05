@@ -468,8 +468,9 @@
   .btog:hover { color: var(--text); background: var(--border); }
   .btog.active { background: #1a1a10; color: var(--amber-lit); border: none; }
 
-  /* Satellite mode — disable the dark filter so terrain colors show through */
-  .leaflet-container.sat-mode .leaflet-tile {
+  /* Satellite and topo modes — disable dark filter so true colors show through */
+  .leaflet-container.sat-mode .leaflet-tile,
+  .leaflet-container.topo-mode .leaflet-tile {
     filter: none;
   }
 
@@ -1086,6 +1087,7 @@
     <div class="base-toggle" id="base-toggle">
       <button class="btog active" data-base="map" onclick="setBaseLayer('map')">MAP</button>
       <button class="btog" data-base="sat" onclick="setBaseLayer('sat')">SAT</button>
+      <button class="btog" data-base="topo" onclick="setBaseLayer('topo')">TOPO</button>
     </div>
     <button class="gmu-toggle-btn" id="gmu-btn" onclick="toggleGMU()" title="Toggle GMU Boundaries">GMU UNITS</button>
     <div class="status-item">
@@ -1321,25 +1323,41 @@ const satLayer = L.tileLayer(
   }
 );
 
+const topoLayer = L.tileLayer(
+  'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}',
+  {
+    attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>',
+    maxZoom: 16
+  }
+);
+
 // Start with street layer
 streetLayer.addTo(map);
 let activeBaseLayer = 'map';
 
 function setBaseLayer(mode) {
   if (mode === activeBaseLayer) return;
+
+  // Remove whichever layer is currently active
+  if (activeBaseLayer === 'map') map.removeLayer(streetLayer);
+  else if (activeBaseLayer === 'sat') map.removeLayer(satLayer);
+  else if (activeBaseLayer === 'topo') map.removeLayer(topoLayer);
+
   activeBaseLayer = mode;
 
-  // Swap tile layers
+  // Add the new layer and set filter mode
   if (mode === 'sat') {
-    map.removeLayer(streetLayer);
     satLayer.addTo(map);
-    // Bring scan grid back on top (tile layers go to back on add)
-    // Satellite: disable dark filter so terrain colors show
     map.getContainer().classList.add('sat-mode');
+    map.getContainer().classList.remove('topo-mode');
+  } else if (mode === 'topo') {
+    topoLayer.addTo(map);
+    map.getContainer().classList.add('topo-mode');
+    map.getContainer().classList.remove('sat-mode');
   } else {
-    map.removeLayer(satLayer);
     streetLayer.addTo(map);
     map.getContainer().classList.remove('sat-mode');
+    map.getContainer().classList.remove('topo-mode');
   }
 
   // Update button states
